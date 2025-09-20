@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP-III - Guia de Estudo Interativo</title>
+    <style>
+        :root {
+            --primary-color: #004d40;
+            --secondary-color: #e0f2f1;
+            --accent-color: #ff5722;
+            --text-color: #212121;
+            --background-color: #f5f5f5;
+            --card-background: #ffffff;
+            --correct-color: #4caf50;
+            --wrong-color: #f44336;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 10px 0;
+            background-color: var(--card-background);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+        .nav-btn {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+            padding: 20px;
+            background-color: var(--card-background);
+            box-shadow: var(--shadow);
+            border-radius: 8px;
+        }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Quiz Styles */
+        #quiz-settings, #quiz-results {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .question-container {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+        }
+        .question-container h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        .options-list {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+        .option-btn {
+            width: 100%;
+            text-align: left;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 4px;
+        }
+        .option-btn:hover { background-color: #f0f0f0; }
+        .option-btn.correct { background-color: var(--correct-color); color: white; border-color: var(--correct-color); }
+        .option-btn.wrong { background-color: var(--wrong-color); color: white; border-color: var(--wrong-color); }
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--secondary-color);
+            border-left: 4px solid var(--primary-color);
+            font-size: 14px;
+        }
+        #quiz-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .nav-quiz-btn {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .progress {
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            transition: width 0.4s ease;
+        }
+
+        /* Flashcard Styles */
+        .flashcard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .flashcard {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flashcard-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .flashcard-front {
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+        .flashcard-back {
+            background-color: var(--card-background);
+            color: var(--text-color);
+            transform: rotateY(180deg);
+            font-size: 0.9em;
+            overflow-y: auto;
+        }
+        .flashcard-back h4 { color: var(--primary-color); margin-bottom: 5px; }
+        .flashcard-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .flashcard-controls button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .flashcard-controls .correct-btn { background-color: var(--correct-color); color: white; }
+        .flashcard-controls .wrong-btn { background-color: var(--wrong-color); color: white; }
+
+        /* Study Guide Styles */
+        .guide-section {
+            margin-bottom: 25px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .guide-section h2 { color: var(--primary-color); margin-top: 0; }
+        .keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .keyword-tag {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+        .flowchart-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .flowchart-container svg {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* General & Utility Classes */
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .hidden { display: none; }
+        .source-cite {
+            font-size: 0.7em;
+            color: #757575;
+            display: block;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background-color: white; color: black; }
+            header, nav, .nav-btn, .btn, #quiz-settings, #quiz-controls, .flashcard-controls { display: none; }
+            .section.active { display: block !important; }
+            .question-container { border: 1px solid black; margin-bottom: 10px; page-break-inside: avoid; }
+            .explanation { background-color: #f0f0f0; border-left-color: black; }
+            h1, h2, h3 { color: black !important; }
+            .flashcard { page-break-after: always; width: 100%; height: auto; border: 1px solid black; }
+            .flashcard-inner { transform: none !important; }
+            .flashcard-front, .flashcard-back { position: static; backface-visibility: visible; border: none; }
+            .flashcard-back { transform: none; }
+            .flashcard-container { display: block; }
+            .flowchart-container svg { border: 1px solid black; }
+            .guide-section { page-break-before: always; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="data" style="display: none;">
+<script type="application/json">
+{
+  "source_files": [
+    {"name": "Sistema endócrino 2025.2.pdf", "pages": 28},
+    {"name": "Aula 2 TGI.pdf", "pages": 42},
+    {"name": "Aula 1 Cavidade Oral.pdf", "pages": 48},
+    {"name": "Tireóide e paratireóides 2025.2.pdf", "pages": 21},
+    {"name": "SOP- III Anexos do trato digestório .pdf", "pages": 72}
+  ],
+  "questions": [
+    {
+      "id": "Q01",
+      "topic": ["Endocrinologia", "Embriologia"],
+      "difficulty": "medio",
+      "source": [{"file": "Sistema endócrino 2025.2.pdf", "page": 12, "excerpt": "Origem Embriológica Dupla... Ectodérmica --> Teto da cavidade oral --> Bolsa de Rathke --> Adeno-hipófise"}],
+      "type": "multiple_choice",
+      "question": "A partir de qual origem embriológica e estrutura se desenvolve a adeno-hipófise?",
+      "options": [
+        "A) Nervosa, a partir do assoalho do diencéfalo.",
+        "B) Endodérmica, a partir da bolsa de Rathke.",
+        "C) Ectodérmica, a partir da bolsa de Rathke.",
+        "D) Mesodérmica, a partir do teto da cavidade oral.",
+        "E) Ectodérmica, a partir da pars nervosa."
+      ],
+      "answer": "C",
+      "explanation": "A adeno-hipófise tem origem ectodérmica, desenvolvendo-se a partir da Bolsa de Rathke, que é uma evaginação do teto da cavidade oral.",
+      "variants": [
+        {"question": "Qual é a origem embriológica da adeno-hipófise, segundo o desenvolvimento fetal?", "options": ["A) A partir do assoalho do diencéfalo, de origem nervosa.", "B) Através da eminência mediana, de origem ectodérmica.", "C) Da bolsa de Rathke, que se origina do ectoderma do teto da cavidade oral.", "D) De um divertículo da faringe primitiva, de origem endodérmica.", "E) Do mesoderma do assoalho do diencéfalo."], "answer": "C", "explanation": "A adeno-hipófise, ou hipófise anterior, origina-se do ectoderma do teto da cavidade oral, formando a bolsa de Rathke."},
+        {"question": "Durante o desenvolvimento embrionário, a adeno-hipófise é formada a partir de qual folheto germinativo e estrutura?", "options": ["A) Nervosa do assoalho do diencéfalo.", "B) Endodérmica do forame cego.", "C) Ectodérmica do teto da cavidade oral (Bolsa de Rathke).", "D) Mesodérmica da eminência mediana.", "E) Ectodérmica da pars nervosa."], "answer": "C", "explanation": "A adeno-hipófise tem uma origem ectodérmica a partir da bolsa de Rathke, um divertículo do teto da cavidade oral."}
+      ]
+    },
+    {
+      "id": "Q02",
+      "topic": ["Gastroenterologia", "Histologia"],
+      "difficulty": "facil",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 13, "excerpt": "A parede do trato digestório é formada por quatro camadas distintas: Mucosa, Submucosa, Muscular e Serosa (ou Adventicia)."}],
+      "type": "multiple_choice",
+      "question": "Quais são as quatro camadas distintas que compõem a parede do trato digestório, da mais interna para a mais externa?",
+      "options": [
+        "A) Serosa, muscular, submucosa e mucosa.",
+        "B) Mucosa, serosa, muscular e submucosa.",
+        "C) Mucosa, submucosa, muscular e serosa/adventícia.",
+        "D) Muscular, submucosa, mucosa e serosa.",
+        "E) Submucosa, mucosa, muscular e serosa."
+      ],
+      "answer": "C",
+      "explanation": "A parede do trato digestório é classicamente descrita como tendo quatro camadas, em ordem do lúmen para o exterior: mucosa, submucosa, muscular e serosa (ou adventícia).",
+      "variants": [
+        {"question": "Em um corte transversal do trato digestório, qual a sequência correta das camadas, começando do lúmen?", "options": ["A) Serosa, Muscular, Submucosa, Mucosa.", "B) Mucosa, Muscular, Submucosa, Serosa.", "C) Submucosa, Mucosa, Muscular, Serosa.", "D) Mucosa, Submucosa, Muscular, Serosa/Adventícia.", "E) Muscular, Serosa, Mucosa, Submucosa."], "answer": "D", "explanation": "As quatro camadas concêntricas do trato gastrointestinal, do interior para o exterior, são: Mucosa, Submucosa, Camada Muscular (própria) e Serosa ou Adventícia."},
+        {"question": "A camada mais interna da parede do trato digestório, em contato direto com o alimento, é conhecida como:", "options": ["A) Submucosa", "B) Serosa", "C) Muscular", "D) Adventícia", "E) Mucosa"], "answer": "E", "explanation": "A camada mais interna da parede do trato digestório é a mucosa, que é responsável pela secreção, absorção e proteção."}
+      ]
+    },
+    {
+      "id": "Q03",
+      "topic": ["Gastroenterologia", "Embriologia"],
+      "difficulty": "medio",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 5, "excerpt": "Derivados do Intestino Anterior: Faringe, Esôfago, estômago e duodeno; Fígado, vesícula biliar e pâncreas."}],
+      "type": "multiple_choice",
+      "question": "Qual dos seguintes órgãos é um derivado do intestino anterior durante o desenvolvimento embrionário?",
+      "options": [
+        "A) Apêndice.",
+        "B) Intestino grosso.",
+        "C) Pâncreas.",
+        "D) Jejuno.",
+        "E) Cólon sigmoide."
+      ],
+      "answer": "C",
+      "explanation": "O pâncreas, juntamente com a faringe, esôfago, estômago, duodeno, fígado e vesícula biliar, são derivados do intestino anterior.",
+      "variants": [
+        {"question": "A partir de qual porção do intestino primitivo se desenvolvem o fígado e o pâncreas?", "options": ["A) Intestino médio.", "B) Intestino posterior.", "C) Intestino anterior.", "D) Ducto vitelino.", "E) Membrana cloacal."], "answer": "C", "explanation": "O intestino anterior dá origem ao fígado, vesícula biliar e pâncreas, além de outros órgãos."},
+        {"question": "Durante o desenvolvimento embrionário, o duodeno e o estômago são formados a partir do:", "options": ["A) Intestino médio.", "B) Ducto vitelino.", "C) Intestino anterior.", "D) Intestino posterior.", "E) Alantoide."], "answer": "C", "explanation": "Tanto o estômago quanto o duodeno são derivados do intestino anterior embrionário."}
+      ]
+    },
+    {
+      "id": "Q04",
+      "topic": ["Gastroenterologia", "Histologia"],
+      "difficulty": "facil",
+      "source": [{"file": "Aula 1 Cavidade Oral.pdf", "page": 5, "excerpt": "Epitélio pavimentoso queratinizado: gengiva e palato duro; Epitélio pavimentoso NÃO queratinizado: palato mole, lábios, bochechas e o assoalho da boca."}],
+      "type": "multiple_choice",
+      "question": "A mucosa do palato duro e da gengiva é revestida por qual tipo de epitélio?",
+      "options": [
+        "A) Epitélio simples colunar.",
+        "B) Epitélio pavimentoso não queratinizado.",
+        "C) Epitélio pseudoestratificado.",
+        "D) Epitélio pavimentoso queratinizado.",
+        "E) Epitélio cúbico simples."
+      ],
+      "answer": "D",
+      "explanation": "A queratinização confere maior resistência mecânica e proteção a áreas de atrito, como a gengiva e o palato duro.",
+      "variants": [
+        {"question": "Qual é a principal vantagem funcional do epitélio pavimentoso queratinizado na cavidade oral?", "options": ["A) Secreção de enzimas digestivas.", "B) Flexibilidade para o movimento da língua.", "C) Maior resistência mecânica contra atrito.", "D) Absorção de nutrientes.", "E) Produção de muco lubrificante."], "answer": "C", "explanation": "O epitélio pavimentoso estratificado queratinizado do palato duro e da gengiva oferece proteção mecânica contra lesões durante a mastigação."},
+        {"question": "Diferencie histologicamente o palato duro do palato mole em relação ao tipo de epitélio de revestimento.", "options": ["A) Palato duro (queratinizado) e palato mole (não queratinizado).", "B) Palato duro (não queratinizado) e palato mole (queratinizado).", "C) Ambos são queratinizados.", "D) Palato duro (cúbico) e palato mole (pavimentoso).", "E) Ambos são não queratinizados."], "answer": "A", "explanation": "O palato duro é coberto por epitélio pavimentoso queratinizado, enquanto o palato mole é coberto por epitélio não queratinizado."}
+      ]
+    },
+    {
+      "id": "Q05",
+      "topic": ["Endocrinologia", "Tireoide"],
+      "difficulty": "dificil",
+      "source": [{"file": "Tireóide e paratireóides 2025.2.pdf", "page": 5, "excerpt": "A glândula tireóide é a primeira glândula endócrina a iniciar seu desenvolvimento... se desenvolve do espessamento do assoalho da faringe primitiva mais especificamente no forame cego da língua."}],
+      "type": "multiple_choice",
+      "question": "Uma criança nasce com uma massa cística na região do pescoço, que se move com a deglutição. O diagnóstico é de cisto do ducto tireoglosso. Qual a base embriológica para essa condição?",
+      "options": [
+        "A) Persistência da bolsa de Rathke.",
+        "B) Atrofia incompleta do assoalho do diencéfalo.",
+        "C) Falha na migração da glândula paratireoide.",
+        "D) Remanescentes epiteliais do ducto que conecta a tireoide à língua.",
+        "E) Desenvolvimento ectópico da glândula adrenal."
+      ],
+      "answer": "D",
+      "explanation": "O cisto do ducto tireoglosso é causado por restos de epitélio do ducto que ligava o primórdio da tireoide ao forame cego da língua, que deveria ter desaparecido completamente.",
+      "variants": [
+        {"question": "Um paciente apresenta uma protrusão na região anterior do pescoço que se eleva quando a língua é pressionada para fora. Esta condição, um cisto do ducto tireoglosso, é uma anomalia embriológica resultante da:", "options": ["A) Migração incompleta da hipófise anterior.", "B) Persistência de um divertículo do esôfago.", "C) Falha na involução do ducto que une a tireoide à base da língua.", "D) Formação de um tumor a partir de tecido tímico acessório.", "E) Anormalidade na diferenciação das células parafoliculares."], "answer": "C", "explanation": "O cisto do ducto tireoglosso resulta da não atrofia completa do ducto que liga a glândula tireoide em desenvolvimento ao forame cego da língua."},
+        {"question": "O forame cego da língua está embriologicamente relacionado com qual estrutura?", "options": ["A) A origem do pâncreas.", "B) A localização final das glândulas paratireoides.", "C) O ponto de partida do desenvolvimento da glândula tireoide.", "D) A formação do palato mole.", "E) O ducto vitelino."], "answer": "C", "explanation": "A glândula tireoide se desenvolve a partir do assoalho da faringe primitiva, em um ponto que é o forame cego da língua."}
+      ]
+    },
+    {
+      "id": "Q06",
+      "topic": ["Endocrinologia", "Histologia"],
+      "difficulty": "medio",
+      "source": [{"file": "Tireóide e paratireóides 2025.2.pdf", "page": 11, "excerpt": "Células parafoliculares (PF), produtoras de calcitonina, se situam entre folículos."}],
+      "type": "multiple_choice",
+      "question": "Um patologista examina uma amostra de tecido da glândula tireoide e observa, além dos folículos, células isoladas ou em pequenos agrupamentos entre eles. Qual a principal função destas células parafoliculares?",
+      "options": [
+        "A) Produção de tiroglobulina.",
+        "B) Regulação da taxa metabólica basal.",
+        "C) Secreção de calcitonina, que reduz a calcemia.",
+        "D) Armazenamento de coloide.",
+        "E) Produção de TSH."
+      ],
+      "answer": "C",
+      "explanation": "As células parafoliculares, também chamadas de células C, estão localizadas entre os folículos da tireoide e são responsáveis pela produção e secreção de calcitonina, um hormônio com ação hipocalcemiante.",
+      "variants": [
+        {"question": "Qual o hormônio produzido pelas células parafoliculares da tireoide e qual sua principal ação?", "options": ["A) TSH; aumenta o metabolismo.", "B) T4; estimula a síntese proteica.", "C) Calcitonina; aumenta a calcemia.", "D) T3; regula o metabolismo de lipídeos.", "E) Calcitonina; reduz a calcemia."], "answer": "E", "explanation": "As células parafoliculares da tireoide produzem calcitonina, um hormônio que age para reduzir os níveis de cálcio no sangue."},
+        {"question": "Ao analisar uma lâmina histológica da tireoide, qual tipo celular é responsável por secretar o hormônio que atua diretamente na redução da concentração sérica de cálcio?", "options": ["A) Tirócitos.", "B) Células oxífilas.", "C) Células principais.", "D) Células parafoliculares (Células C).", "E) Fibroblastos."], "answer": "D", "explanation": "As células parafoliculares, também conhecidas como Células C, produzem o hormônio calcitonina, que age na redução da calcemia."}
+      ]
+    },
+    {
+      "id": "Q07",
+      "topic": ["Gastroenterologia", "Anexos do TGI"],
+      "difficulty": "medio",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 49, "excerpt": "Células de Kupffer 15% das células do fígado. Fagocitose (macrófagos), metabolizam hemácias, digerindo hemoglobina."}],
+      "type": "multiple_choice",
+      "question": "Uma biópsia hepática revela a presença de células fagocitárias no revestimento dos capilares sinusoides. Que tipo de célula hepática é esta e qual sua principal função?",
+      "options": [
+        "A) Células estreladas de Ito, responsáveis pela síntese de colágeno.",
+        "B) Hepatócitos, envolvidos no metabolismo de lipídios e proteínas.",
+        "C) Células de Kupffer, que fagocitam hemácias e digerem hemoglobina.",
+        "D) Células endoteliais, que formam a parede do sinusoide.",
+        "E) Células caliciformes, produtoras de muco."
+      ],
+      "answer": "C",
+      "explanation": "As Células de Kupffer são macrófagos residentes no fígado, localizados nos capilares sinusoides, e sua função principal é a fagocitose, incluindo a metabolização de hemácias.",
+      "variants": [
+        {"question": "Qual tipo de célula hepática, com função fagocitária, se localiza nos capilares sinusoides?", "options": ["A) Hepatócitos.", "B) Células de Kupffer.", "C) Células de Ito.", "D) Células de Paneth.", "E) Colangiocitos."], "answer": "B", "explanation": "As células de Kupffer são macrófagos que residem nos sinusoides hepáticos e estão envolvidos na fagocitose de partículas e detritos."},
+        {"question": "A principal função das células de Kupffer no fígado é:", "options": ["A) Síntese de proteínas plasmáticas.", "B) Armazenamento de vitamina A.", "C) Secreção de bile.", "D) Fagocitose e metabolismo de hemácias.", "E) Produção de fibrinogênio."], "answer": "D", "explanation": "As células de Kupffer atuam como macrófagos fagocitando hemácias e metabolizando hemoglobina, entre outras funções."}
+      ]
+    },
+    {
+      "id": "Q08",
+      "topic": ["Endocrinologia", "Anatomia", "Neuro-hipófise"],
+      "difficulty": "medio",
+      "source": [{"file": "Sistema endócrino 2025.2.pdf", "page": 27, "excerpt": "Neuro-hipófise: Não contém células secretoras. Não produz hormônios. Armazena Vasopressina (ADH) e Ocitocina... As vesículas contendo os hormônios são armazenadas na neuro-hipófise."}],
+      "type": "multiple_choice",
+      "question": "Um estudante de medicina afirma que a neuro-hipófise é uma glândula que produz e secreta ADH e Ocitocina. Sua afirmação está incorreta, pois a neuro-hipófise, histologicamente, é uma estrutura que:",
+      "options": [
+        "A) Produz ocitocina, mas armazena apenas ADH.",
+        "B) Possui células endócrinas que produzem ADH e ocitocina.",
+        "C) É um local de passagem para hormônios do hipotálamo, mas não os produz.",
+        "D) É composta por células de Herring que sintetizam ambos os hormônios.",
+        "E) Sintetiza e secreta ADH, mas a ocitocina é produzida em outro local."
+      ],
+      "answer": "C",
+      "explanation": "A neuro-hipófise não possui células secretoras e não produz hormônios. Ela funciona como um local de armazenamento e liberação para hormônios (ADH e Ocitocina) que são produzidos no hipotálamo e transportados para lá.",
+      "variants": [
+        {"question": "Os hormônios ADH e Ocitocina, embora liberados pela neuro-hipófise, são sintetizados em qual estrutura?", "options": ["A) Adeno-hipófise.", "B) Tireoide.", "C) Adrenal.", "D) Hipotálamo.", "E) Pineal."], "answer": "D", "explanation": "O hipotálamo produz os hormônios ADH e Ocitocina, que são então transportados e armazenados na neuro-hipófise para posterior liberação."},
+        {"question": "Qual a principal característica histológica da neuro-hipófise que a distingue da adeno-hipófise?", "options": ["A) Presença de células cromófilas.", "B) Ausência de células secretoras de hormônios.", "C) Presença de capilares fenestrados.", "D) Produção de hormônios estimulantes.", "E) Organização em cordões celulares."], "answer": "B", "explanation": "Ao contrário da adeno-hipófise, que tem células secretoras, a neuro-hipófise é primariamente uma estrutura de armazenamento, sem capacidade de produzir hormônios por si só."}
+      ]
+    },
+    {
+      "id": "Q09",
+      "topic": ["Gastroenterologia", "Anexos do TGI"],
+      "difficulty": "facil",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 4, "excerpt": "Funções da saliva: Lubrificar; Umidificar; Digerir CHO e LIP.; Auxiliar na homogeneização do bolo alimentar..."}, {"file": "Aula 1 Cavidade Oral.pdf", "page": 43, "excerpt": "Secreção principal: Amilase salivar, enzima que inicia a digestão de carboidratos na boca."}],
+      "type": "multiple_choice",
+      "question": "Qual enzima presente na saliva é a principal responsável por iniciar a digestão de carboidratos na cavidade oral?",
+      "options": [
+        "A) Lactoferrina.",
+        "B) Lipase salivar.",
+        "C) Lisozima.",
+        "D) Amilase salivar.",
+        "E) Pepsina."
+      ],
+      "answer": "D",
+      "explanation": "A amilase salivar, também conhecida como ptialina, é a enzima secretada pelas glândulas salivares que inicia a digestão dos carboidratos.",
+      "variants": [
+        {"question": "A disfunção das glândulas parótidas, como na parotidite, afeta primariamente a digestão inicial de qual macronutriente?", "options": ["A) Proteínas.", "B) Lipídeos.", "C) Carboidratos.", "D) Ácidos nucleicos.", "E) Vitaminas."], "answer": "C", "explanation": "A principal secreção das glândulas parótidas é a amilase salivar, uma enzima que inicia a digestão de carboidratos na boca. Sua inflamação prejudica esse processo."},
+        {"question": "Além de lubrificar e umidificar, qual a principal função da saliva relacionada à digestão?", "options": ["A) Quebra de proteínas em aminoácidos.", "B) Digestão de lipídeos em ácidos graxos.", "C) Iniciar a digestão de carboidratos com a amilase salivar.", "D) Absorção de glicose.", "E) Neutralização de ácidos estomacais."], "answer": "C", "explanation": "A saliva contém a enzima amilase, que inicia a digestão química dos carboidratos na boca."}
+      ]
+    },
+    {
+      "id": "Q10",
+      "topic": ["Gastroenterologia", "Histologia"],
+      "difficulty": "facil",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 17, "excerpt": "Estômago... Divisão Histológica: Cárdia, Fundo e Corpo, Piloro (antro)... Célula mucosa de revestimento na fosseta... Lâmina própria... Muscular da mucosa... Submucosa."}],
+      "type": "multiple_choice",
+      "question": "Qual das seguintes camadas do estômago é responsável pelos movimentos peristálticos e contém o plexo mioentérico (Auerbach)?",
+      "options": [
+        "A) Mucosa.",
+        "B) Submucosa.",
+        "C) Muscular.",
+        "D) Serosa.",
+        "E) Lâmina própria."
+      ],
+      "answer": "C",
+      "explanation": "A camada muscular é composta por duas camadas de músculo liso (circular interna e longitudinal externa) e é responsável pelos movimentos peristálticos do trato digestório, sendo controlada pelo plexo mioentérico.",
+      "variants": [
+        {"question": "A peristalse, movimento essencial para o trânsito do bolo alimentar no tubo digestório, é controlada pelo plexo de Auerbach, que se encontra em qual das quatro camadas?", "options": ["A) Mucosa.", "B) Submucosa.", "C) Muscular.", "D) Serosa.", "E) Adventícia."], "answer": "C", "explanation": "O plexo mioentérico (Auerbach) está localizado na camada muscular do trato gastrointestinal e é responsável por controlar os movimentos peristálticos."},
+        {"question": "Um corte histológico do esôfago mostra uma camada de músculo estriado esquelético. Onde essa característica é encontrada?", "options": ["A) Na porção inferior do esôfago.", "B) Na porção média do esôfago.", "C) Na porção superior do esôfago.", "D) Na lâmina própria.", "E) Na submucosa."], "answer": "C", "explanation": "A muscular do esôfago na sua porção superior é composta por músculo estriado esquelético. A porção média tem músculo esquelético e liso, e a inferior apenas liso."}
+      ]
+    },
+    {
+      "id": "Q11",
+      "topic": ["Gastroenterologia", "Anexos do TGI", "Pâncreas"],
+      "difficulty": "medio",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 19, "excerpt": "Pâncreas: É uma glândula mista (anfícrina); Produz enzimas digestivas na porção exócrina (acinos); Produção de hormônios na porção endócrina (ilhotas de Langerhans ou Pancreáticas)."}, {"file": "SOP- III Anexos do trato digestório .pdf", "page": 21, "excerpt": "Ilhotas de Langerhans Beta (β) ... Sintetizam: Insulina e peptídeo C."}],
+      "type": "multiple_choice",
+      "question": "Considerando o pâncreas como uma glândula mista, qual das seguintes funções está corretamente associada à sua porção endócrina e qual tipo celular é responsável por ela?",
+      "options": [
+        "A) Produção de amilase pelos ácinos pancreáticos.",
+        "B) Secreção de suco pancreático pelas células centroacinosas.",
+        "C) Produção de glucagon pelas células beta das ilhotas de Langerhans.",
+        "D) Síntese de insulina pelas células beta das ilhotas de Langerhans.",
+        "E) Produção de somatostatina pelas células alfa."
+      ],
+      "answer": "D",
+      "explanation": "A porção endócrina do pâncreas é constituída pelas ilhotas de Langerhans. As células beta (β), que compõem a maioria das células da ilhota, são responsáveis pela síntese e secreção de insulina.",
+      "variants": [
+        {"question": "Qual a principal célula endócrina do pâncreas e qual hormônio ela produz?", "options": ["A) Células alfa: glucagon.", "B) Células beta: somatostatina.", "C) Células delta: insulina.", "D) Células beta: insulina.", "E) Células acinares: enzimas digestivas."], "answer": "D", "explanation": "As células beta das ilhotas de Langerhans são as mais abundantes e produzem a insulina, hormônio fundamental para a regulação da glicose."},
+        {"question": "Um paciente com diabetes mellitus tipo 1 apresenta destruição autoimune de uma população celular específica no pâncreas. Qual tipo de célula e qual hormônio estão majoritariamente afetados neste caso?", "options": ["A) Células alfa e glucagon.", "B) Células delta e somatostatina.", "C) Células acinares e amilase.", "D) Células beta e insulina.", "E) Células centroacinosas e bicarbonato."], "answer": "D", "explanation": "O diabetes tipo 1 é caracterizado pela destruição das células beta pancreáticas, levando à deficiência de insulina."}
+      ]
+    },
+    {
+      "id": "Q12",
+      "topic": ["Endocrinologia", "Tireoide", "Fisiologia"],
+      "difficulty": "facil",
+      "source": [{"file": "Tireóide e paratireóides 2025.2.pdf", "page": 4, "excerpt": "T3 e T4 = Regulam a Taxa Metabólica Basal, regulação termica, metabolismo de lipídeos e crescimento."}],
+      "type": "multiple_choice",
+      "question": "Qual é a principal função dos hormônios T3 (triiodotironina) e T4 (tiroxina)?",
+      "options": [
+        "A) Aumentar a calcemia.",
+        "B) Reduzir o consumo de oxigênio.",
+        "C) Regular a taxa metabólica basal.",
+        "D) Promover a degradação de proteínas.",
+        "E) Aumentar a secreção de insulina."
+      ],
+      "answer": "C",
+      "explanation": "Os hormônios T3 e T4 são os principais reguladores da taxa metabólica basal, além de influenciarem o metabolismo de lipídeos, a regulação térmica e o crescimento.",
+      "variants": [
+        {"question": "Um paciente com hipotireoidismo pode apresentar sintomas de letargia e intolerância ao frio. Qual a principal causa fisiológica desses sintomas, relacionada à função dos hormônios tireoidianos?", "options": ["A) Aumento na absorção de glicose.", "B) Diminuição da taxa metabólica basal.", "C) Excesso de produção de calcitonina.", "D) Aumento do número de mitocôndrias.", "E) Falha na captação de iodeto."], "answer": "B", "explanation": "A principal função dos hormônios tireoidianos é a regulação da taxa metabólica basal. Sua deficiência (hipotireoidismo) causa a diminuição dessa taxa, resultando em sintomas como letargia e intolerância ao frio."},
+        {"question": "Além da regulação do metabolismo, T3 e T4 também são essenciais para:", "options": ["A) a coagulação sanguínea.", "B) o crescimento do corpo e o desenvolvimento do sistema nervoso durante a vida fetal.", "C) a formação de ácido clorídrico no estômago.", "D) o transporte de oxigênio pelas hemácias.", "E) a síntese de ácidos biliares."], "answer": "B", "explanation": "Os hormônios tireoidianos influenciam o crescimento do corpo e o desenvolvimento do sistema nervoso, especialmente durante a vida fetal."}
+      ]
+    },
+    {
+      "id": "Q13",
+      "topic": ["Gastroenterologia", "Histologia", "Estômago"],
+      "difficulty": "medio",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 24, "excerpt": "Células parietais (oxínticas): Secretam HCl e Fator intrínseco."}],
+      "type": "multiple_choice",
+      "question": "Em um corte histológico do estômago, as células parietais (oxínticas) são identificadas. Qual a função crucial destas células para a digestão?",
+      "options": [
+        "A) Produção de pepsinogênio e lipase.",
+        "B) Secreção de muco alcalino para proteção.",
+        "C) Secreção de gastrina para estimular outras células.",
+        "D) Produção de HCl e Fator Intrínseco.",
+        "E) Síntese de serotonina e grelina."
+      ],
+      "answer": "D",
+      "explanation": "As células parietais, ou oxínticas, são as responsáveis pela secreção de ácido clorídrico (HCl), que acidifica o lúmen gástrico, e do Fator Intrínseco, necessário para a absorção de vitamina B12.",
+      "variants": [
+        {"question": "Um paciente com anemia perniciosa tem deficiência de vitamina B12 devido a um problema na produção do Fator Intrínseco. Qual tipo de célula estomacal está afetada?", "options": ["A) Células mucosas superficiais.", "B) Células zimogênicas.", "C) Células parietais (oxínticas).", "D) Células enteroendócrinas.", "E) Células tronco."], "answer": "C", "explanation": "O fator intrínseco é uma secreção das células parietais (oxínticas) do estômago. Sua deficiência causa a má absorção de vitamina B12, levando à anemia perniciosa."},
+        {"question": "Qual das seguintes células estomacais é responsável por acidificar o conteúdo gástrico e auxiliar na absorção de Vitamina B12?", "options": ["A) Células principais.", "B) Células enteroendócrinas.", "C) Células mucosas do colo.", "D) Células de Paneth.", "E) Células parietais."], "answer": "E", "explanation": "As células parietais produzem ácido clorídrico, que acidifica o estômago, e o fator intrínseco, que é essencial para a absorção da vitamina B12."}
+      ]
+    },
+    {
+      "id": "Q14",
+      "topic": ["Gastroenterologia", "Histologia", "Intestino"],
+      "difficulty": "medio",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 31, "excerpt": "Mucosa Intestinal: Células de Paneth: Base das glândulas intestinais (produzem lisozima - ação bacteriostática)."}],
+      "type": "multiple_choice",
+      "question": "A partir de uma biópsia do intestino delgado, qual tipo celular é encontrado na base das criptas intestinais e possui grânulos de secreção com ação bacteriostática?",
+      "options": [
+        "A) Enterócitos.",
+        "B) Células caliciformes.",
+        "C) Células enteroendócrinas.",
+        "D) Células de Paneth.",
+        "E) Linfócitos intraepiteliais."
+      ],
+      "answer": "D",
+      "explanation": "As células de Paneth estão localizadas na base das glândulas (criptas) intestinais e secretam lisozima e defensina, que têm uma importante função de defesa (bacteriostática) no lúmen intestinal.",
+      "variants": [
+        {"question": "As células de Paneth, localizadas na base das criptas intestinais, têm como principal função:", "options": ["A) Absorver nutrientes.", "B) Produzir muco para lubrificação.", "C) Secreção de peptídeos antimicrobianos.", "D) Secretar hormônios reguladores da digestão.", "E) Gerar células-tronco para o epitélio."], "answer": "C", "explanation": "As células de Paneth produzem lisozima e defensina, que atuam como agentes antibacterianos (ação bacteriostática) no intestino."},
+        {"question": "Qual das seguintes células do intestino delgado é crucial para a defesa inata do trato gastrointestinal, secretando lisozimas e defensinas?", "options": ["A) Células absortivas (enterócitos).", "B) Células caliciformes.", "C) Células de Paneth.", "D) Células enteroendócrinas.", "E) Células de Kupffer."], "answer": "C", "explanation": "As células de Paneth são exócrinas e localizadas nas criptas intestinais, com a função de produzir substâncias com propriedades antimicrobianas, como lisozimas."}
+      ]
+    },
+    {
+      "id": "Q15",
+      "topic": ["Gastroenterologia", "Anexos do TGI", "Fígado"],
+      "difficulty": "dificil",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 61, "excerpt": "A bilirrubina... insolúvel em água, é derivada do metabolismo de hemoglobina... A atividade glucuronil-transferase nos hepatocitos é responsável pela conjugação da bilirrubina com glucuronato no retículo endoplasmático liso, formando um composto solúvel em água, o glucuronato de bilirrubina."}],
+      "type": "multiple_choice",
+      "question": "Um recém-nascido apresenta icterícia. O exame laboratorial indica uma deficiência na atividade da enzima glucuronil-transferase. Qual o principal impacto dessa deficiência no metabolismo da bilirrubina e por que isso causa icterícia?",
+      "options": [
+        "A) Impede a secreção de bilirrubina conjugada para o sangue, causando o acúmulo no sangue.",
+        "B) Reduz a síntese de hemoglobina, levando ao acúmulo de bilirrubina não conjugada.",
+        "C) Compromete a conjugação da bilirrubina, que se torna insolúvel e se acumula no sangue.",
+        "D) Causa a obstrução dos canalículos biliares, impedindo o fluxo da bile.",
+        "E) Aumenta a reabsorção de ácidos biliares, saturando o fígado."
+      ],
+      "answer": "C",
+      "explanation": "A enzima glucuronil-transferase é essencial para conjugar a bilirrubina (insolúvel) com o glucuronato, tornando-a solúvel em água (conjugada). A deficiência dessa enzima causa o acúmulo de bilirrubina não conjugada no sangue, que é insolúvel, resultando em icterícia.",
+      "variants": [
+        {"question": "A icterícia neonatal é frequentemente causada por imaturidade de uma enzima que atua na conversão de bilirrubina insolúvel para hidrossolúvel. Que enzima é essa?", "options": ["A) Amilase.", "B) Aldolase.", "C) Lipase.", "D) Glucuronil-transferase.", "E) Anidrase carbônica."], "answer": "D", "explanation": "A glucuronil-transferase atua no retículo endoplasmático liso dos hepatócitos, convertendo a bilirrubina insolúvel em uma forma solúvel em água (glucuronato de bilirrubina)."},
+        {"question": "A bilirrubina não conjugada, derivada da quebra da hemoglobina, se torna solúvel em água e passível de excreção após sua conjugação com o glucuronato. Qual organela do hepatócito é o local principal dessa reação?", "options": ["A) Mitocôndria.", "B) Lisossomo.", "C) Retículo Endoplasmático Liso.", "D) Complexo de Golgi.", "E) Aparelho de Golgi."], "answer": "C", "explanation": "A conjugação da bilirrubina com o glucuronato, catalisada pela glucuronil-transferase, ocorre no retículo endoplasmático liso (REL) dos hepatócitos."}
+      ]
+    },
+    {
+      "id": "Q16",
+      "topic": ["Gastroenterologia", "Histologia", "Anexos do TGI"],
+      "difficulty": "medio",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 45, "excerpt": "Capilares contínuos ou somáticos... Glândulas endócrinas... Capilares fenestrados... Fígado, baço e medula óssea... CAPILARES SINUSÓIDES."}],
+      "type": "multiple_choice",
+      "question": "Um residente de histologia observa em um corte de fígado capilares de trajeto sinuoso, diâmetro irregular e com uma lâmina basal descontínua, facilitando a troca de substâncias. Qual o tipo de capilar observado?",
+      "options": [
+        "A) Contínuo.",
+        "B) Fenestrado.",
+        "C) Sinusoide.",
+        "D) Muscular.",
+        "E) Arteríola."
+      ],
+      "answer": "C",
+      "explanation": "Os capilares sinusoides, encontrados no fígado, baço e medula óssea, possuem um trajeto sinuoso, diâmetro amplo e uma lâmina basal descontínua, o que permite uma troca mais fácil entre o sangue e o tecido.",
+      "variants": [
+        {"question": "Qual tipo de capilar, comum em glândulas endócrinas, é caracterizado por ter orifícios (fenestras) em sua parede e uma lâmina basal contínua?", "options": ["A) Contínuo.", "B) Fenestrado.", "C) Sinusoide.", "D) Venular.", "E) Arteríola."], "answer": "B", "explanation": "Os capilares fenestrados são típicos de glândulas endócrinas e rins, caracterizados por poros em seu endotélio e uma lâmina basal contínua."},
+        {"question": "O endotélio dos capilares sinusoides no fígado é importante para a função do órgão porque:", "options": ["A) Impede a passagem de macromoléculas.", "B) Possui junções oclusivas que regulam o fluxo.", "C) Sua lâmina basal é contínua e rica em colágeno.", "D) Permite a livre troca de substâncias devido à sua descontinuidade.", "E) É o principal local de síntese de albumina."], "answer": "D", "explanation": "A lâmina basal descontínua e a irregularidade dos capilares sinusoides facilitam a troca de substâncias entre o sangue e os hepatócitos."}
+      ]
+    },
+    {
+      "id": "Q17",
+      "topic": ["Gastroenterologia", "Anexos do TGI"],
+      "difficulty": "dificil",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 28, "excerpt": "Ausência das c. mioepiteliais... Regulação pela Colecistoquinina (CCQ ou CCK) e SECRETINA... CCK induz secreção de suco pancreático rico em enzimas... Secretina causa secreção de suco pancreático rico em bicarbonato."}],
+      "type": "multiple_choice",
+      "question": "Um paciente chega ao pronto-socorro com dor abdominal intensa, referindo histórico de cálculo biliar. A colecistoquinina (CCK) é um hormônio crucial na digestão de gorduras. Qual sua ação no pâncreas exócrino, além de estimular a contração da vesícula biliar?",
+      "options": [
+        "A) Induz a secreção de suco pancreático rico em bicarbonato.",
+        "B) Causa a liberação de suco pancreático rico em enzimas.",
+        "C) Inibe a secreção de somatostatina.",
+        "D) Atua na síntese de insulina.",
+        "E) Estimula a secreção de glucagon."
+      ],
+      "answer": "B",
+      "explanation": "A Colecistoquinina (CCK), liberada quando o quimo rico em gordura entra no duodeno, atua no pâncreas exócrino induzindo a secreção de um suco pancreático rico em enzimas digestivas.",
+      "variants": [
+        {"question": "Para neutralizar a acidez do quimo que chega do estômago ao duodeno, qual hormônio estimula o pâncreas a liberar um suco rico em bicarbonato?", "options": ["A) Colecistoquinina (CCK).", "B) Gastrina.", "C) Secretina.", "D) Motilina.", "E) Grelina."], "answer": "C", "explanation": "A secretina, liberada pela mucosa duodenal, causa a secreção de suco pancreático rico em bicarbonato, que neutraliza o quimo ácido."},
+        {"question": "A porção exócrina do pâncreas, responsável pela produção de enzimas digestivas, é estimulada pelos hormônios secretina e CCK. Como essas ações se diferenciam?", "options": ["A) Secretina induz a secreção de enzimas, CCK a de bicarbonato.", "B) Secretina inibe a secreção, CCK a estimula.", "C) Ambas estimulam a secreção de bicarbonato.", "D) Secretina estimula a secreção de bicarbonato, CCK a de enzimas.", "E) Ambas estimulam a secreção de enzimas."], "answer": "D", "explanation": "A secretina atua estimulando a secreção de bicarbonato, enquanto a CCK estimula a liberação de enzimas pancreáticas."}
+      ]
+    },
+    {
+      "id": "Q18",
+      "topic": ["Gastroenterologia", "Anexos do TGI"],
+      "difficulty": "facil",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 64, "excerpt": "Fígado... HEPATICO DIR... HEPATICO ESQ... HEPATICO COMUM... CISTICO... COLÉDOCO... VESÍCULA BILIAR... PÂNCREAS... DUODENO."}],
+      "type": "multiple_choice",
+      "question": "Qual ducto transporta a bile do fígado para a vesícula biliar?",
+      "options": [
+        "A) Ducto pancreático.",
+        "B) Ducto hepático comum.",
+        "C) Ducto colédoco.",
+        "D) Ducto cístico.",
+        "E) Ducto biliar."
+      ],
+      "answer": "D",
+      "explanation": "O ducto cístico conecta a vesícula biliar ao ducto hepático comum. A bile pode fluir através do ducto cístico para ser armazenada na vesícula biliar, ou fluir da vesícula biliar para o ducto colédoco.",
+      "variants": [
+        {"question": "Um cálculo biliar que obstrui o ducto colédoco impedirá o fluxo de bile de quais estruturas?", "options": ["A) Apenas da vesícula biliar.", "B) Apenas do fígado.", "C) Do pâncreas e do fígado.", "D) Do fígado e da vesícula biliar.", "E) Apenas do pâncreas."], "answer": "D", "explanation": "O ducto colédoco é formado pela união do ducto hepático comum (que drena a bile do fígado) e do ducto cístico (que drena a bile da vesícula biliar). Uma obstrução neste ponto afeta o fluxo de ambas as vias."},
+        {"question": "A bile, após ser produzida no fígado, converge para qual ducto que, ao se unir ao ducto cístico, forma o ducto colédoco?", "options": ["A) Ducto pancreático.", "B) Ducto hepático comum.", "C) Ducto hepático direito.", "D) Ducto hepático esquerdo.", "E) Ducto de Wirsung."], "answer": "B", "explanation": "Os ductos hepáticos direito e esquerdo se unem para formar o ducto hepático comum, que se encontra com o ducto cístico para formar o ducto colédoco."}
+      ]
+    },
+    {
+      "id": "Q19",
+      "topic": ["Gastroenterologia", "Intestino"],
+      "difficulty": "medio",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 41, "excerpt": "Intestino Grosso: Sem pregas (exceto no reto)... Sem vilosidades... Epitélio columnar simples... Muitas células caliciformes."}],
+      "type": "multiple_choice",
+      "question": "Qual das seguintes características histológicas é exclusiva do intestino grosso, em contraste com o intestino delgado?",
+      "options": [
+        "A) Presença de epitélio colunar simples.",
+        "B) Presença de vilosidades intestinais.",
+        "C) Ausência de vilosidades e presença de muitas células caliciformes.",
+        "D) Presença de glândulas de Paneth.",
+        "E) Camada muscular com plexo mioentérico."
+      ],
+      "answer": "C",
+      "explanation": "Diferentemente do intestino delgado que possui vilosidades e menos células caliciformes, o intestino grosso não possui vilosidades e sua mucosa é rica em células caliciformes produtoras de muco.",
+      "variants": [
+        {"question": "A principal função do intestino grosso, a absorção de água e a formação da massa fecal, é facilitada pela presença de:", "options": ["A) Vilosidades intestinais.", "B) Criptas de Lieberkühn profundas.", "C) Muitas células caliciformes.", "D) Células de Paneth.", "E) Microvilosidades nos enterócitos."], "answer": "C", "explanation": "A produção de muco pelas numerosas células caliciformes no intestino grosso ajuda na lubrificação e na formação do bolo fecal para sua posterior eliminação."},
+        {"question": "Em um corte histológico do trato digestório, a ausência de vilosidades e a grande quantidade de células caliciformes são indicativas de qual porção?", "options": ["A) Intestino delgado.", "B) Estômago.", "C) Esôfago.", "D) Intestino grosso.", "E) Duodeno."], "answer": "D", "explanation": "A mucosa do intestino grosso não apresenta vilosidades, mas contém uma grande quantidade de células caliciformes, característica que o diferencia do intestino delgado."}
+      ]
+    },
+    {
+      "id": "Q20",
+      "topic": ["Endocrinologia", "Anatomia"],
+      "difficulty": "medio",
+      "source": [{"file": "Sistema endócrino 2025.2.pdf", "page": 2, "excerpt": "Células endócrinas isoladas, células enteroendócrinas do trato digestivo."}],
+      "type": "multiple_choice",
+      "question": "Em contraste com as glândulas endócrinas clássicas, as células enteroendócrinas são caracterizadas por serem:",
+      "options": [
+        "A) Agrupadas em cordões celulares.",
+        "B) Apenas encontradas no fígado e pâncreas.",
+        "C) Dispersas no epitélio do trato digestivo, não formando glândulas compactas.",
+        "D) Células basófilas que secretam glicoproteínas.",
+        "E) Organizam-se em folículos com coloide."
+      ],
+      "answer": "C",
+      "explanation": "As glândulas endócrinas clássicas são formadas pela união de células endócrinas em cordões ou folículos. Em contraste, as células enteroendócrinas são células endócrinas isoladas, dispersas no epitélio do trato digestivo.",
+      "variants": [
+        {"question": "A principal diferença na organização das células enteroendócrinas em comparação com as glândulas endócrinas clássicas como a tireoide é que as primeiras:", "options": ["A) Formam folículos com acúmulo de coloide.", "B) Estão organizadas em cordões celulares separados por vasos.", "C) Estão isoladas ou dispersas em outros tecidos.", "D) Não possuem capilares fenestrados para a secreção.", "E) Se encontram apenas no tecido nervoso."], "answer": "C", "explanation": "Enquanto as glândulas endócrinas clássicas formam órgãos compactos, as células enteroendócrinas são células isoladas, dispersas ao longo do trato digestivo."},
+        {"question": "Qual tipo de hormônio é secretado por células endócrinas que não se agrupam em uma glândula compacta, mas estão espalhadas em outro sistema corporal?", "options": ["A) Hormônios esteroides.", "B) Hormônios glicoproteicos.", "C) Hormônios proteicos.", "D) Hormônios peptídicos.", "E) Hormônios secretados por células enteroendócrinas do TGI."], "answer": "E", "explanation": "As células enteroendócrinas estão dispersas no trato digestivo e secretam hormônios que atuam localmente (parácrino) ou à distância. A organização celular é a principal diferença de uma glândula compacta."}
+      ]
+    },
+    {
+      "id": "Q21",
+      "topic": ["Gastroenterologia", "Anatomia", "Língua"],
+      "difficulty": "facil",
+      "source": [{"file": "Aula 1 Cavidade Oral.pdf", "page": 10, "excerpt": "Papilas filiformes... NÃO tem botões gustativos... Queratinizadas..."}],
+      "type": "multiple_choice",
+      "question": "Qual tipo de papila lingual é a única que não contém botões gustativos e é coberta por um epitélio queratinizado?",
+      "options": [
+        "A) Papilas foliadas.",
+        "B) Papilas circunvaladas.",
+        "C) Papilas fungiformes.",
+        "D) Papilas filiformes.",
+        "E) Tonsilas linguais."
+      ],
+      "answer": "D",
+      "explanation": "As papilas filiformes são as mais numerosas e cobrem a maior parte do dorso da língua. Elas são queratinizadas, o que lhes confere uma função puramente mecânica, e por isso não contêm botões gustativos.",
+      "variants": [
+        {"question": "As papilas filiformes se distinguem das outras papilas da língua por qual característica?", "options": ["A) São as únicas que possuem botões gustativos.", "B) São as maiores e localizam-se na porção posterior da língua.", "C) Estão envolvidas na percepção do sabor amargo.", "D) Não contêm botões gustativos e são queratinizadas.", "E) Estão localizadas nas bordas laterais da língua."], "answer": "D", "explanation": "As papilas filiformes são queratinizadas, o que lhes confere um papel mecânico, sem a presença de botões gustativos, ao contrário das outras papilas."},
+        {"question": "A ausência de botões gustativos e a presença de queratina são características de qual papila da língua?", "options": ["A) Fungiforme.", "B) Foliada.", "C) Circunvalada.", "D) Filiforme.", "E) Vallum."], "answer": "D", "explanation": "As papilas filiformes são as únicas que não possuem botões gustativos e são queratinizadas para sua função mecânica."}
+      ]
+    },
+    {
+      "id": "Q22",
+      "topic": ["Gastroenterologia", "Anexos do TGI", "Pâncreas"],
+      "difficulty": "medio",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 28, "excerpt": "Ácino Pancreático... Células centroacinosas... Ducto intercalar."}],
+      "type": "multiple_choice",
+      "question": "No pâncreas exócrino, as células que revestem o início dos ductos intercalares e que penetram parcialmente no lúmen do ácino são chamadas de:",
+      "options": [
+        "A) Células de Paneth.",
+        "B) Células centroacinosas.",
+        "C) Células beta.",
+        "D) Células alfa.",
+        "E) Células zimogênicas."
+      ],
+      "answer": "B",
+      "explanation": "As células centroacinosas são uma característica única do pâncreas, sendo as células ductais que se estendem para dentro do lúmen do ácino pancreático.",
+      "variants": [
+        {"question": "Qual tipo celular é exclusivo do pâncreas e marca a transição entre o ácino e o ducto intercalar?", "options": ["A) Células de Paneth.", "B) Células centroacinosas.", "C) Células principais.", "D) Células de Kupfer.", "E) Células beta."], "answer": "B", "explanation": "As células centroacinosas são as células do ducto intercalar que se estendem para o interior dos ácinos, sendo uma marca histológica do pâncreas."},
+        {"question": "Ao analisar a porção exócrina do pâncreas, qual tipo de célula pode ser facilmente identificado pela sua localização, que penetra no ácino?", "options": ["A) Células acinosas.", "B) Células de Paneth.", "C) Células mioepiteliais.", "D) Células centroacinosas.", "E) Células serosas."], "answer": "D", "explanation": "As células centroacinosas são células ductais que se projetam no interior do ácino, uma característica que as torna visíveis na histologia pancreática."}
+      ]
+    },
+    {
+      "id": "Q23",
+      "topic": ["Gastroenterologia", "Anexos do TGI", "Fígado"],
+      "difficulty": "medio",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 36, "excerpt": "Triade portal: Ramo de artéria hepática, Ducto biliar, Ramo da veia porta... O lóbulo hepático clássico... é composto por cordões de hepatocitos que são entremeados por capilares sinusoides... Na periferia do lóbulo há tecido conjuntivo, no qual se encontra o espaço porta, que contém a triade portal."}],
+      "type": "multiple_choice",
+      "question": "Um patologista examina a periferia de um lóbulo hepático e identifica três estruturas dispostas em conjunto em um espaço de tecido conjuntivo. Qual é a denominação correta para esse conjunto de estruturas e o que ele contém?",
+      "options": [
+        "A) Veia central: ramo da veia hepática, artéria hepática e ducto biliar.",
+        "B) Tríade portal: ramo da artéria hepática, ramo da veia porta e ducto biliar.",
+        "C) Espaço de Disse: canalículo biliar, sinusoide e hepatócito.",
+        "D) Tríade biliar: ducto hepático, veia porta e artéria hepática.",
+        "E) Espaço porta: veia centrolobular, artéria hepática e ducto biliar."
+      ],
+      "answer": "B",
+      "explanation": "A tríade portal é um complexo localizado na periferia dos lóbulos hepáticos e consiste em um ramo da veia porta, um ramo da artéria hepática e um ducto biliar.",
+      "variants": [
+        {"question": "A tríade portal, encontrada na periferia dos lóbulos hepáticos, é formada por quais componentes?", "options": ["A) Veia centrolobular, artéria hepática e ducto biliar.", "B) Ramo da artéria hepática, ramo da veia porta e ducto biliar.", "C) Vênula hepática terminal, sinusoide e canalículo biliar.", "D) Ducto hepático comum, veia porta e artéria hepática.", "E) Veia sublobular, artéria hepática e ducto biliar."], "answer": "B", "explanation": "A tríade portal é uma estrutura crucial para a circulação hepática e é composta por um ramo da artéria hepática, um ramo da veia porta e um ducto biliar."},
+        {"question": "Qual é a principal função da tríade portal no fígado?", "options": ["A) Drenar o sangue do centro do lóbulo para a periferia.", "B) Coletar a bile e o sangue arterial para a veia central.", "C) Levar sangue arterial e venoso para os sinusoides e drenar a bile para a periferia.", "D) Sintetizar proteínas plasmáticas e glicogênio.", "E) Fagocitar hemácias envelhecidas e detritos sanguíneos."], "answer": "C", "explanation": "Os componentes da tríade portal (artéria hepática e veia porta) levam sangue para o lóbulo, enquanto o ducto biliar coleta a bile produzida pelos hepatócitos, fluindo em direção oposta."}
+      ]
+    },
+    {
+      "id": "Q24",
+      "topic": ["Endocrinologia", "Anatomia"],
+      "difficulty": "facil",
+      "source": [{"file": "Sistema endócrino 2025.2.pdf", "page": 1, "excerpt": "Histologia e Embriologia do Sistema endócrino... Profa. Dra. Nila Bezerril... Prof. Dr. Pedro Torquato... Estácio... CAMPUS QUIXADA... IDOMED Instituto de Educação Médica."}],
+      "type": "multiple_choice",
+      "question": "Qual das seguintes glândulas não é considerada uma glândula endócrina clássica, segundo a organização mostrada na figura 2 da Aula de Sistema Endócrino?",
+      "options": [
+        "A) Hipófise.",
+        "B) Tireoide.",
+        "C) Ovários.",
+        "D) Pâncreas.",
+        "E) Fígado."
+      ],
+      "answer": "E",
+      "explanation": "O fígado é considerado um anexo do sistema digestório e, embora tenha funções endócrinas (como síntese de IGF-1 e trombopoetina), ele não é listado como uma glândula endócrina clássica na figura 2 do material, que destaca as glândulas principais como hipófise, tireoide, suprarrenais, pâncreas e gônadas.",
+      "variants": [
+        {"question": "A partir da figura 'ENDOCRINE SYSTEM' fornecida, qual dos órgãos listados abaixo não é uma glândula endócrina clássica?", "options": ["A) Testículos.", "B) Suprarrenais.", "C) Pâncreas.", "D) Hipófise.", "E) Cérebro."], "answer": "E", "explanation": "O cérebro é o centro do sistema nervoso central e, embora contenha estruturas endócrinas como o hipotálamo, não é classificado como uma 'glândula endócrina clássica' no contexto dos slides fornecidos. As demais opções são glândulas endócrinas clássicas."},
+        {"question": "O material de estudo lista o pâncreas como uma glândula endócrina clássica. O pâncreas também possui uma porção exócrina. Que tipo de glândula é um órgão que possui as duas porções?", "options": ["A) Glândula folicular.", "B) Glândula unicelular.", "C) Glândula mista (anfícrina).", "D) Glândula acinosa.", "E) Glândula tubular."], "answer": "C", "explanation": "O pâncreas é uma glândula mista ou anfícrina, pois possui uma porção endócrina (produz hormônios) e uma porção exócrina (produz enzimas digestivas)."}
+      ]
+    },
+    {
+      "id": "Q25",
+      "topic": ["Endocrinologia", "Tireoide"],
+      "difficulty": "medio",
+      "source": [{"file": "Tireóide e paratireóides 2025.2.pdf", "page": 11, "excerpt": "Tirócitos... Cels. cúbicas, pavimentosas ou colunares... Colunares baixas: hipoatividade da glândula... Colunares altas: hiperatividade da glândula."}],
+      "type": "multiple_choice",
+      "question": "A morfologia dos tirócitos pode indicar o estado funcional da glândula tireoide. Qual relação é clinicamente correta?",
+      "options": [
+        "A) Tirócitos pavimentosos indicam hiperatividade da glândula.",
+        "B) Aumento do volume folicular está associado à hiperatividade.",
+        "C) Tirócitos colunares altos sugerem um estado de hiperatividade.",
+        "D) Células cúbicas baixas são um sinal de tireotoxicose.",
+        "E) Tirócitos colunares baixos indicam a necessidade de TSH."
+      ],
+      "answer": "C",
+      "explanation": "A morfologia das células foliculares (tirócitos) se correlaciona com sua atividade. Células colunares altas são um sinal de hiperatividade da glândula, enquanto células colunares baixas ou pavimentosas indicam hipoatividade.",
+      "variants": [
+        {"question": "A hiperatividade da glândula tireoide, frequentemente encontrada no hipertireoidismo, se manifesta histologicamente por qual alteração nos tirócitos?", "options": ["A) Se tornam pavimentosos e o volume do folículo aumenta.", "B) Ocorrem alterações na sensibilidade aos hormônios.", "C) Tornam-se células cúbicas baixas.", "D) Adquirem um formato colunar alto.", "E) Aumenta a quantidade de coloide nos folículos."], "answer": "D", "explanation": "A hiperatividade dos tirócitos faz com que as células se tornem mais altas (colunares), em contraste com a inatividade, onde ficam mais achatadas (pavimentosas)."},
+        {"question": "Ao examinar uma lâmina de tireoide de um paciente com hipotireoidismo, o que se espera observar na morfologia dos tirócitos?", "options": ["A) Células colunares altas.", "B) Hiperplasia folicular.", "C) Células pavimentosas ou cúbicas baixas.", "D) Ausência de coloide.", "E) Proliferação de células parafoliculares."], "answer": "C", "explanation": "A hipoatividade da glândula tireoide está associada a tirócitos com morfologia mais achatada (pavimentosa) ou cúbica baixa."}
+      ]
+    },
+    {
+      "id": "Q26",
+      "topic": ["Gastroenterologia", "Anatomia", "Embriologia"],
+      "difficulty": "medio",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 4, "excerpt": "Dobradura Cefalocaudal... Intestino Primitivo ↓ Derivado do endoderma embrionário."}],
+      "type": "multiple_choice",
+      "question": "O intestino primitivo, que dá origem ao trato gastrointestinal tubular, se forma a partir de qual folheto embrionário?",
+      "options": [
+        "A) Mesoderma.",
+        "B) Ectoderma superficial.",
+        "C) Endoderma embrionário.",
+        "D) Mesoderma parietal.",
+        "E) Ectoderma da membrana bucofaríngea."
+      ],
+      "answer": "C",
+      "explanation": "O intestino primitivo, que se subdivide nas porções anterior, média e posterior, é um derivado do endoderma embrionário.",
+      "variants": [
+        {"question": "Durante a dobradura cefalocaudal, o intestino primitivo é formado pelo dobramento de qual camada germinativa?", "options": ["A) Ectoderma.", "B) Mesoderma visceral.", "C) Mesoderma parietal.", "D) Endoderma.", "E) Notocorda."], "answer": "D", "explanation": "A formação do intestino primitivo é um resultado do dobramento do embrião, onde o endoderma embrionário se incorpora para formar o tubo intestinal."},
+        {"question": "Qual das seguintes estruturas é derivada do endoderma embrionário, segundo a embriologia do sistema digestório?", "options": ["A) Intestino anterior.", "B) Membrana orofaríngea.", "C) Parede abdominal.", "D) Mesentério dorsal.", "E) Coração."], "answer": "A", "explanation": "O intestino primitivo, incluindo as porções anterior, média e posterior, é derivado do endoderma embrionário."}
+      ]
+    },
+    {
+      "id": "Q27",
+      "topic": ["Gastroenterologia", "Histologia", "Estômago"],
+      "difficulty": "medio",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 26, "excerpt": "Células zimogênicas (principais)... Produção de pepsinogênio (zimogênio)... Pepsina no meio ácido... Produção de lipase."}],
+      "type": "multiple_choice",
+      "question": "Qual tipo de célula gástrica é responsável pela produção de pepsinogênio, que se transforma em pepsina em ambiente ácido, e de lipase?",
+      "options": [
+        "A) Células mucosas do colo.",
+        "B) Células enteroendócrinas.",
+        "C) Células parietais (oxínticas).",
+        "D) Células zimogênicas (principais).",
+        "E) Células de Paneth."
+      ],
+      "answer": "D",
+      "explanation": "As células zimogênicas, também chamadas de células principais, localizadas na base das glândulas gástricas do fundo e corpo, são as produtoras de pepsinogênio e lipase. O pepsinogênio é a forma inativa da pepsina, que é ativada pelo HCl.",
+      "variants": [
+        {"question": "A digestão de proteínas no estômago é iniciada pela pepsina. Qual célula produz o pepsinogênio, a forma inativa da enzima?", "options": ["A) Células mucosas superficiais.", "B) Células parietais.", "C) Células enteroendócrinas.", "D) Células zimogênicas.", "E) Células de Paneth."], "answer": "D", "explanation": "As células zimogênicas produzem pepsinogênio, um zimogênio (proenzima) que é ativado pela acidez do estômago para se tornar pepsina, iniciando a digestão proteica."},
+        {"question": "Em um corte histológico do corpo do estômago, as células que possuem o citoplasma basófilo e são produtoras de pepsinogênio são as:", "options": ["A) Parietais.", "B) Enteroendócrinas.", "C) Zimogênicas.", "D) Mucosas.", "E) Células-tronco."], "answer": "C", "explanation": "As células zimogênicas são descritas como basófilas e produtoras de pepsinogênio e lipase, localizadas na base das glândulas gástricas."}
+      ]
+    },
+    {
+      "id": "Q28",
+      "topic": ["Endocrinologia", "Pâncreas"],
+      "difficulty": "dificil",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 21, "excerpt": "As células secretoras endócrinas formam as ilhotas de Langerhans... Ilhotas de Langerhans Beta (β)... Ilhotas de Langerhans Alfa (α)... Ilhotas de Langerhans Delta (δ)."}],
+      "type": "multiple_choice",
+      "question": "Um paciente diabético tipo 2 apresenta resistência à insulina, mas com produção inicial de insulina preservada. Essa produção é realizada por qual tipo de célula nas ilhotas de Langerhans?",
+      "options": [
+        "A) Células Alfa (α).",
+        "B) Células Beta (β).",
+        "C) Células Delta (δ).",
+        "D) Células G.",
+        "E) Células F."
+      ],
+      "answer": "B",
+      "explanation": "As células beta (β) das ilhotas de Langerhans são as responsáveis pela síntese e secreção de insulina. São as células mais abundantes nas ilhotas.",
+      "variants": [
+        {"question": "Qual é a principal célula produtora de insulina e qual a sua representatividade nas ilhotas de Langerhans?", "options": ["A) Célula alfa, 25%.", "B) Célula beta, 75%.", "C) Célula delta, 5%.", "D) Célula gama, 10%.", "E) Célula F, 5%."], "answer": "B", "explanation": "As células beta (β) compõem a maioria das células nas ilhotas de Langerhans (70-80%) e são as produtoras de insulina."},
+        {"question": "A somatostatina, um hormônio com função de inibir outras secreções, é produzida por qual tipo de célula na ilhota pancreática?", "options": ["A) Células alfa.", "B) Células beta.", "C) Células delta.", "D) Células F.", "E) Células G."], "answer": "C", "explanation": "As células delta (δ) das ilhotas de Langerhans são as responsáveis pela síntese de somatostatina, que tem um papel inibitório sobre a função endócrina do pâncreas."}
+      ]
+    },
+    {
+      "id": "Q29",
+      "topic": ["Gastroenterologia", "Histologia", "Salivares"],
+      "difficulty": "medio",
+      "source": [{"file": "SOP- III Anexos do trato digestório .pdf", "page": 9, "excerpt": "Maiores: Parótida... Acinosa composta... Células Serosas (piramidais, sentadas na lâmina basal (acinos))... Produção de amilase salivar."}],
+      "type": "multiple_choice",
+      "question": "Um paciente apresenta inflamação na região pré-auricular direita com dor, febre e dificuldade para mastigar (parotidite). A glândula parótida, afetada no caso, é uma glândula acinosa composta que tem predominância de qual tipo de célula e qual secreção?",
+      "options": [
+        "A) Células mucosas, com produção de mucina.",
+        "B) Células serosas, com secreção de amilase.",
+        "C) Células mioepiteliais, com contração e liberação de lisozima.",
+        "D) Células mucosas, com secreção de lisozima.",
+        "E) Células seromucosas, com produção de amilase e mucina."
+      ],
+      "answer": "B",
+      "explanation": "A glândula parótida é uma glândula acinosa composta, constituída exclusivamente por células serosas. A principal secreção dessas células é a amilase salivar, enzima que inicia a digestão de carboidratos.",
+      "variants": [
+        {"question": "Qual é a principal secreção das células serosas da glândula parótida?", "options": ["A) Muco.", "B) Mucinas e lisozimas.", "C) Amilase salivar.", "D) Lactoferrina.", "E) Hormônios."], "answer": "C", "explanation": "As células serosas são as principais unidades secretoras da glândula parótida e são especializadas na produção de proteínas, com destaque para a amilase salivar."},
+        {"question": "A disfunção das glândulas parótidas, afetando as células serosas, pode prejudicar qual etapa inicial da digestão?", "options": ["A) Digestão de proteínas.", "B) Emulsificação de gorduras.", "C) Início da digestão de carboidratos.", "D) Absorção de vitaminas.", "E) Produção de fator intrínseco."], "answer": "C", "explanation": "A amilase salivar, produzida pelas células serosas das parótidas, é crucial para o início da digestão de carboidratos na boca. Sua disfunção prejudica essa etapa."}
+      ]
+    },
+    {
+      "id": "Q30",
+      "topic": ["Gastroenterologia", "Embriologia"],
+      "difficulty": "dificil",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 11, "excerpt": "Uma criança nasce com um grande defeito lateral ao umbigo. A maior parte dos intestinos grosso e delgado está protrusa através do defeito e não está coberta por amnio... Gastrosquise."}],
+      "type": "multiple_choice",
+      "question": "Um recém-nascido é diagnosticado com gastrosquise, uma anomalia congênita em que as alças intestinais estão protrusas através de um defeito na parede abdominal, sem cobertura por âmnio. Qual a base embriológica dessa anomalia?",
+      "options": [
+        "A) Falha no fechamento da parede corporal lateral durante o dobramento do embrião.",
+        "B) Persistência do ducto vitelino.",
+        "C) Falha na involução da vesícula vitelínica.",
+        "D) Defeito na formação do cordão umbilical.",
+        "E) Persistência da membrana orofaríngea."
+      ],
+      "answer": "A",
+      "explanation": "A gastrosquise é um defeito da parede abdominal que ocorre devido a uma falha no fechamento das pregas laterais durante o dobramento embrionário, permitindo a extrusão das vísceras. (inferred)",
+      "variants": [
+        {"question": "A gastrosquise é uma malformação congênita da parede abdominal caracterizada pela herniação do intestino sem o saco amniótico. Qual evento do desenvolvimento embrionário está diretamente relacionado a essa patologia?", "options": ["A) A atrofia do pedículo embrionário.", "B) O fechamento da parede corporal.", "C) A dobradura cefalocaudal.", "D) A involução da membrana cloacal.", "E) A formação do ducto vitelino."], "answer": "B", "explanation": "A gastrosquise ocorre devido a um fechamento incompleto da parede abdominal. (inferred) Essa falha no fechamento da parede corporal está relacionada a problemas na dobradura lateral do embrião."},
+        {"question": "Diferencie a onfalocele da gastrosquise em relação à base embriológica da falha. A onfalocele resulta de uma falha na involução do intestino para a cavidade abdominal, enquanto a gastrosquise é uma falha em qual processo?", "options": ["A) Fechamento da cavidade oral primitiva.", "B) Formação da membrana bucofaríngea.", "C) Formação do ducto tireoglosso.", "D) Fechamento da parede abdominal (pregas laterais).", "E) Fusão dos brotos pancreáticos."], "answer": "D", "explanation": "A gastrosquise, diferentemente da onfalocele, não envolve o cordão umbilical, sendo um defeito lateral da parede abdominal causado por uma falha no fechamento das pregas corporais laterais."}
+      ]
+    },
+    {
+      "id": "Q31",
+      "topic": ["Gastroenterologia", "Histologia"],
+      "difficulty": "facil",
+      "source": [{"file": "Aula 2 TGI.pdf", "page": 36, "excerpt": "Placas de Peyer: Agregados de células linfoides (GALT), mais numerosos no íleo."}],
+      "type": "multiple_choice",
+      "question": "Qual a principal função das Placas de Peyer, que são agregados de células linfoides encontrados em maior número no íleo?",
+      "options": [
+        "A) Absorção de lipídios e vitaminas.",
+        "B) Secreção de enzimas digestivas.",
+        "C) Produção de muco.",
+        "D) Função imunológica de defesa local.",
+        "E) Regulação da motilidade intestinal."
+      ],
+      "answer": "D",
+      "explanation": "As Placas de Peyer são agregados de tecido linfoide (GALT) localizados principalmente no íleo. Sua função é monitorar o conteúdo intestinal e montar uma resposta imunológica contra patógenos.",
+      "variants": [
+        {"question": "As Placas de Peyer são parte de qual sistema de defesa do corpo, e em qual porção do intestino estão mais concentradas?", "options": ["A) Sistema Endócrino, no duodeno.", "B) Sistema Nervoso Entérico, no jejuno.", "C) Sistema Linfoide (GALT), no íleo.", "D) Sistema Muscular, no cólon.", "E) Sistema Exócrino, no reto."], "answer": "C", "explanation": "As Placas de Peyer são agregados linfoides que fazem parte do GALT (tecido linfoide associado ao intestino), com maior concentração no íleo."},
+        {"question": "Um paciente com doença inflamatória intestinal que afeta o íleo terminal pode ter comprometimento de quais estruturas linfoides?", "options": ["A) Nódulos linfoides do mesentério.", "B) Fibras de colágeno na submucosa.", "C) Placas de Peyer.", "D) Glândulas de Von Ebner.", "E) Células de Kupffer."], "answer": "C", "explanation": "As Placas de Peyer são os agregados de tecido linfoide mais proeminentes do intestino, especialmente no íleo, e são importantes na imunidade local."}
+      ]
+    },
+    {
+      "id": "Q32",
+      "topic": ["Endocrinologia", "Sinalização"],
+      "difficulty": "facil",
+      "source": [{"file": "Sistema endócrino 2025.2.pdf", "page": 5, "excerpt": "Células produzem moléculas que agem nelas. Controle Autócrino."}],
+      "type": "multiple_choice",
+      "question": "O tipo de sinalização em que uma célula produz uma molécula que atua sobre ela mesma é chamado de:",
+      "options": [
+        "A) Controle parácrino.",
+        "B) Controle justácrino.",
+        "C) Controle autócrino.",
+        "D) Controle endócrino.",
+        "E) Controle sináptico."
+      ],
+      "answer": "C",
+      "explanation": "O controle autócrino ocorre quando uma célula produz uma molécula que age sobre seus próprios receptores.",
+      "variants": [
+        {"question": "Qual modo de secreção de hormônios ou moléculas de sinalização envolve uma célula que age em si mesma?", "options": ["A) Parácrino.", "B) Justácrino.", "C) Autócrino.", "D) Endócrino.", "E) Exócrino."], "answer": "C", "explanation": "O controle autócrino descreve a situação em que uma molécula de sinalização age na mesma célula que a produziu."},
+        {"question": "O termo 'autócrino' é usado para descrever o modo de ação de um hormônio ou mensageiro químico que:", "options": ["A) age a longa distância no sangue.", "B) age em células vizinhas.", "C) age na mesma célula que o secretou.", "D) age em tecidos distantes.", "E) não necessita de receptores."], "answer": "C", "explanation": "No controle autócrino, as células produzem moléculas que agem sobre elas mesmas."}
+      ]
+    },
+    {
+      "id": "Q33",
+      "topic": ["Endocrinologia", "Tireoide", "Embriologia"],
+      "difficulty": "medio",
+      "source": [{"file": "Tireóide e paratireóides 2025.2.pdf", "page": 16, "excerpt": "Sexta semana, o epitelio ventral da terceira e quarta bolsa faríngea se diferencia na glândula paratireoide... A região dorsal da quarta bolsa faríngea forma a glândula paratireoide superior."}],
+      "type": "multiple_choice",
+      "question": "As glândulas paratireoides superior e inferior são derivadas, respectivamente, de quais bolsas faríngeas durante o desenvolvimento embrionário?",
+      "options": [
+        "A) Ambas da terceira bolsa.",
+        "B) Ambas da quarta bolsa.",
+        "C) Quarta e terceira bolsas faríngeas.",
+        "D) Terceira e quarta bolsas faríngeas.",
+        "E) Segunda e terceira bolsas faríngeas."
+      ],
+      "answer": "C",
+      "explanation": "A glândula paratireoide superior se desenvolve a partir do epitélio dorsal da quarta bolsa faríngea. A glândula paratireoide inferior se desenvolve a partir do epitélio ventral da terceira bolsa faríngea.",
+      "variants": [
+        {"question": "Qual a origem embriológica da glândula paratireoide superior?", "options": ["A) Epitélio da terceira bolsa faríngea.", "B) Epitélio da quarta bolsa faríngea.", "C) Assoalho do diencéfalo.", "D) Teto da cavidade oral.", "E) Forame cego da língua."], "answer": "B", "explanation": "O epitélio da região dorsal da quarta bolsa faríngea é a origem da glândula paratireoide superior."},
+        {"question": "A glândula paratireoide inferior se desenvolve a partir do epitélio da:", "options": ["A) Terceira bolsa faríngea ventral.", "B) Terceira bolsa faríngea dorsal.", "C) Quarta bolsa faríngea ventral.", "D) Quarta bolsa faríngea dorsal.", "E) Quinta bolsa faríngea."], "answer": "A", "explanation": "A glândula paratireoide inferior tem sua origem no epitélio ventral da terceira bolsa faríngea."}
+      ]
+    },
+    {
+      "id": "Q34",
+      "topic": ["Gastroenterologia", "Anexos do TGI", "Salivares"],
+      "difficulty": "facil",
+      "source": [{"file": "Aula 1 Cavidade Oral.pdf", "page": 21, "excerpt": "Glândulas Salivares Maiores: Revestidas por cápsula de Tecido Conjuntivo (estroma) -Parótidas; Submandibulares; Sublinguais."}],
+      "type": "multiple_choice",
+      "question": "Qual das seguintes glândulas salivares maiores não é encapsulada?",
+      "options": [
+        "A) Parótida.",
+        "B) Sublingual.",
+        "C) Submandibular.",
+        "D) Bucal.",
+        "E) Lingual."
+      ],
+      "answer": "B",
+      "explanation": "As glândulas salivares maiores, como a parótida e a submandibular, são encapsuladas. As glândulas sublinguais, apesar de serem consideradas glândulas maiores, não possuem uma cápsula verdadeira e são menos delimitadas. As glândulas menores em geral não são encapsuladas. O material de estudo lista as sublinguais como maiores e não as classifica como encapsuladas. (inferred)",
+      "variants": [
+        {"question": "As glândulas salivares maiores são a parótida, a submandibular e a sublingual. Qual delas é caracterizada por ser a menos encapsulada?", "options": ["A) Parótida.", "B) Submandibular.", "C) Sublingual.", "D) Ambas parótida e submandibular.", "E) Todas são bem encapsuladas."], "answer": "C", "explanation": "As glândulas sublinguais, embora maiores, são descritas como menos delimitadas e não totalmente encapsuladas. (inferred) "},
+        {"question": "As glândulas salivares menores são caracterizadas por serem:", "options": ["A) Encapsuladas e produzir principalmente amilase.", "B) Dispersas na mucosa oral e não encapsuladas.", "C) Localizadas em pares e produzir principalmente lisozima.", "D) Mistas (serosas e mucosas) e encapsuladas.", "E) Secreção de grande volume de saliva."], "answer": "B", "explanation": "As glândulas salivares menores não são encapsuladas e estão dispersas na mucosa oral e submucosa."}
+      ]
+    },
+    {
+      "id": "Q35",
+      "topic": ["Endocrinologia", "Histologia", "Hipófise"],
+      "difficulty": "facil",
+      "source": [{"file": "Sistema endócrino 2025.2.pdf", "page": 24, "excerpt": "Tipos de células - Pars distalis. Cromófilas... Cromófobas: sem secreção."}],
+      "type": "multiple_choice",
+      "question": "Qual tipo de célula, na pars distalis da adeno-hipófise, não possui grânulos de secreção visíveis e é considerada 'sem secreção'?",
+      "options": [
+        "A) Células acidófilas.",
+        "B) Células basófilas.",
+        "C) Células cromófilas.",
+        "D) Células cromófobas.",
+        "E) Células somatotróficas."
+      ],
+      "answer": "D",
+      "explanation": "As células cromófobas da pars distalis são chamadas assim porque coram fracamente (fobas, do grego 'medo' de cor). Elas são células 'sem secreção', geralmente interpretadas como células desgranuladas ou células-tronco.",
+      "variants": [
+        {"question": "Uma biópsia da adeno-hipófise é realizada, e as células que não coram com facilidade são identificadas. Qual a classificação histológica dessas células?", "options": ["A) Células acidófilas.", "B) Células basófilas.", "C) Células cromófilas.", "D) Células cromófobas.", "E) Células mamotróficas."], "answer": "D", "explanation": "As células cromófobas recebem esse nome por apresentarem pouca afinidade por corantes, sendo histologicamente 'sem cor'."},
+        {"question": "Na adeno-hipófise, as células com secreção ativa são as cromófilas. Qual tipo celular não é considerado cromófilo?", "options": ["A) Células acidófilas.", "B) Células basófilas.", "C) Células gonadotróficas.", "D) Células tireotróficas.", "E) Células cromófobas."], "answer": "E", "explanation": "Cromófilas (amigas de cor) e cromófobas (aversas à cor) são as duas grandes categorias de células da adeno-hipófise. Células acidófilas e basófilas são subcategorias das cromófilas, enquanto as cromófobas não possuem secreção visível."}
+      ]
+    }
+  ],
+  "flashcards": [
+    {
+      "front": "O que são Células de Paneth?",
+      "back": "Células exócrinas na base das criptas intestinais. Produzem lisozima e defensina, com função de defesa bacteriostática.",
+      "mnemonic": "Paneth = 'Pan-defesa' (pan de 'todos') da flora intestinal."
+    },
+    {
+      "front": "Qual a função das Células de Kupffer no fígado?",
+      "back": "São macrófagos residentes do fígado, localizados nos capilares sinusoides. Sua função principal é a fagocitose de hemácias velhas, bactérias e outros detritos.",
+      "mnemonic": "Kupffer = 'Células-K' (Células-Chef) do fígado. Limpam tudo."
+    },
+    {
+      "front": "Diferença entre capilares fenestrados e sinusoides.",
+      "back": "Fenestrados: têm orifícios no endotélio, mas com lâmina basal contínua (glândulas endócrinas, rins). Sinusoides: têm trajeto sinuoso, diâmetro irregular e lâmina basal descontínua (fígado, baço, medula óssea).",
+      "mnemonic": "Fenestra = 'Janela' com cortina (lâmina basal). Sinusoide = 'Buraco' sem cortina (lâmina descontínua)."
+    },
+    {
+      "front": "Qual a origem embrionária da adeno-hipófise e da neuro-hipófise?",
+      "back": "Adeno-hipófise: ectodérmica, a partir da bolsa de Rathke. Neuro-hipófise: nervosa, a partir do assoalho do diencéfalo.",
+      "mnemonic": "Adeno = 'A de cima' (boca/ectoderma). Neuro = 'N de nervo' (cérebro/ectoderma neural)."
+    },
+    {
+      "front": "O que é a tríade portal no fígado?",
+      "back": "É um conjunto de três estruturas na periferia do lóbulo hepático: um ramo da veia porta, um ramo da artéria hepática e um ducto biliar.",
+      "mnemonic": "Trio Portal = V.A.D. (Veia, Artéria, Ducto)."
+    },
+    {
+      "front": "Qual a principal função das células parietais do estômago?",
+      "back": "Produzem ácido clorídrico (HCl) para acidificar o suco gástrico e Fator Intrínseco, necessário para a absorção de vitamina B12 no intestino.",
+      "mnemonic": "Parietal = 'P' de 'Parede'. Na parede do estômago, 'P' de 'Produz' HCl e 'P' de 'Protege' a B12 (Fator Intrínseco)."
+    },
+    {
+      "front": "Qual a principal função dos hormônios T3 e T4?",
+      "back": "Regulam a taxa metabólica basal, o metabolismo de lipídios e o crescimento.",
+      "mnemonic": "T3/T4 = 'Turbo' do corpo."
+    },
+    {
+      "front": "O que são as células cromófobas da adeno-hipófise?",
+      "back": "Células que não coram bem, consideradas 'sem secreção' e representam células desgranuladas ou células-tronco.",
+      "mnemonic": "Cromó-fobas = 'Fobia' (medo) da cor. Não coram."
+    },
+    {
+      "front": "Qual o modo de ação de um hormônio parácrino?",
+      "back": "Ação a curta distância, em células vizinhas, sem a necessidade de circulação sanguínea. Exemplo: gastrina estimulando a produção de ácido clorídrico.",
+      "mnemonic": "Parácrino = 'Perto-ácrino'. Age em células próximas."
+    },
+    {
+      "front": "Qual a função do ducto tireoglosso na embriologia?",
+      "back": "Um canal que conecta o primórdio da tireoide ao forame cego da língua durante a migração da glândula. Geralmente atrofia e desaparece. Sua persistência pode formar um cisto.",
+      "mnemonic": "Tireo-glosso = 'Tireoide' + 'Língua'. Conecta os dois."
+    }
+  ],
+  "study_guides": [
+    {
+      "title": "Sistema Endócrino Geral e Hipófise",
+      "summary": "O sistema endócrino utiliza hormônios como mensageiros químicos para coordenar funções corporais. A sinalização pode ser endócrina (via sanguínea), parácrina (células vizinhas) ou autócrina (a própria célula). A hipófise, dividida em adeno-hipófise e neuro-hipófise, mantém relações anatômicas e funcionais com o hipotálamo, sendo a primeira de origem ectodérmica e a segunda de origem nervosa.",
+      "keywords": ["Hormônios", "Glândulas Endócrinas", "Autócrino/Parácrino/Endócrino", "Hipófise", "Hipotálamo", "Adeno-hipófise", "Neuro-hipófise", "Bolsa de Rathke", "Cromófilas/Cromófobas"],
+      "flowcharts": [
+        {
+          "title": "Tipos de Sinalização Hormonal",
+          "svg": "<svg width='400' height='200' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'><rect x='20' y='20' width='80' height='40' fill='#b2dfdb' stroke='#004d40' rx='5' /><text x='60' y='45' text-anchor='middle' font-size='12'>Célula 1</text><rect x='20' y='120' width='80' height='40' fill='#b2dfdb' stroke='#004d40' rx='5' /><text x='60' y='145' text-anchor='middle' font-size='12'>Célula 2</text><line x1='60' y1='60' x2='60' y2='120' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><text x='60' y='90' text-anchor='middle' font-size='10'>Autócrino</text><rect x='150' y='20' width='80' height='40' fill='#b2dfdb' stroke='#004d40' rx='5' /><text x='190' y='45' text-anchor='middle' font-size='12'>Célula A</text><rect x='250' y='20' width='80' height='40' fill='#b2dfdb' stroke='#004d40' rx='5' /><text x='290' y='45' text-anchor='middle' font-size='12'>Célula B</text><line x1='190' y1='40' x2='290' y2='40' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><text x='240' y='30' text-anchor='middle' font-size='10'>Parácrino</text><rect x='150' y='120' width='80' height='40' fill='#b2dfdb' stroke='#004d40' rx='5' /><text x='190' y='145' text-anchor='middle' font-size='12'>Célula X</text><rect x='300' y='120' width='80' height='40' fill='#b2dfdb' stroke='#004d40' rx='5' /><text x='340' y='145' text-anchor='middle' font-size='12'>Célula Y</text><line x1='190' y1='140' x2='340' y2='140' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><path d='M 190 140 C 265 100, 265 100, 340 140' fill='none' stroke='#ff5722' stroke-width='2' /><text x='265' y='100' text-anchor='middle' font-size='10' fill='#ff5722'>Endócrino</text><defs><marker id='arrowhead' markerWidth='10' markerHeight='7' refX='0' refY='3.5' orient='auto'><polygon points='0 0, 10 3.5, 0 7' fill='#004d40' /></marker></defs></svg>"
+        },
+        {
+          "title": "Origem da Hipófise",
+          "svg": "<svg width='400' height='200' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'><g transform='translate(50, 20)'><rect x='0' y='0' width='120' height='40' fill='#ffcc80' stroke='#ff5722' rx='5' /><text x='60' y='25' text-anchor='middle' font-size='12'>Ectoderma</text></g><g transform='translate(230, 20)'><rect x='0' y='0' width='120' height='40' fill='#b2ebf2' stroke='#004d40' rx='5' /><text x='60' y='25' text-anchor='middle' font-size='12'>Neuroectoderma</text></g><g transform='translate(50, 70)'><rect x='0' y='0' width='120' height='40' fill='#ffcc80' stroke='#ff5722' rx='5' /><text x='60' y='25' text-anchor='middle' font-size='12'>Bolsa de Rathke</text></g><g transform='translate(230, 70)'><rect x='0' y='0' width='120' height='40' fill='#b2ebf2' stroke='#004d40' rx='5' /><text x='60' y='25' text-anchor='middle' font-size='12'>Assoalho do Diencéfalo</text></g><g transform='translate(50, 140)'><rect x='0' y='0' width='120' height='40' fill='#ffcc80' stroke='#ff5722' rx='5' /><text x='60' y='25' text-anchor='middle' font-size='12'>Adeno-hipófise</text></g><g transform='translate(230, 140)'><rect x='0' y='0' width='120' height='40' fill='#b2ebf2' stroke='#004d40' rx='5' /><text x='60' y='25' text-anchor='middle' font-size='12'>Neuro-hipófise</text></g><line x1='110' y1='60' x2='110' y2='70' stroke='#ff5722' stroke-width='2' marker-end='url(#arrowhead)' /><line x1='290' y1='60' x2='290' y2='70' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><line x1='110' y1='110' x2='110' y2='140' stroke='#ff5722' stroke-width='2' marker-end='url(#arrowhead)' /><line x1='290' y1='110' x2='290' y2='140' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /></svg>"
+        }
+      ]
+    },
+    {
+      "title": "Tireoide e Paratireoides",
+      "summary": "A tireoide é a primeira glândula endócrina a se formar, de origem endodérmica no forame cego da língua. Ela migra para sua posição final, com o ducto tireoglosso geralmente desaparecendo. Suas células foliculares (tirócitos) produzem T3 e T4, reguladores metabólicos, enquanto as células parafoliculares produzem calcitonina, que reduz a calcemia. As paratireoides, localizadas na face posterior da tireoide, produzem o Paratormônio (PTH), que aumenta a calcemia.",
+      "keywords": ["Tireoide", "Paratireoides", "Ducto Tireoglosso", "T3/T4", "Calcitonina", "Tirócitos", "Células Parafoliculares", "Paratormônio (PTH)"],
+      "flowcharts": [
+        {
+          "title": "Embriologia da Tireoide",
+          "svg": "<svg width='400' height='200' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'><rect x='20' y='20' width='120' height='40' fill='#c8e6c9' stroke='#004d40' rx='5' /><text x='80' y='45' text-anchor='middle' font-size='12'>Forame Cego (Língua)</text><line x1='80' y1='60' x2='80' y2='80' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='20' y='80' width='120' height='40' fill='#c8e6c9' stroke='#004d40' rx='5' /><text x='80' y='105' text-anchor='middle' font-size='12'>Primórdio da Tireoide</text><line x1='80' y1='120' x2='80' y2='140' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='20' y='140' width='120' height='40' fill='#c8e6c9' stroke='#004d40' rx='5' /><text x='80' y='165' text-anchor='middle' font-size='12'>Migração Inferior</text></g><g transform='translate(230, 20)'><rect x='0' y='0' width='140' height='40' fill='#ffe0b2' stroke='#ff5722' rx='5' /><text x='70' y='25' text-anchor='middle' font-size='12'>Ducto Tireoglosso</text></g><g transform='translate(230, 80)'><rect x='0' y='0' width='140' height='40' fill='#ffcdd2' stroke='#f44336' rx='5' /><text x='70' y='105' text-anchor='middle' font-size='12'>Atrofia e Desaparecimento</text></g><line x1='140' y1='100' x2='230' y2='100' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /><line x1='300' y1='60' x2='300' y2='80' stroke='#f44336' stroke-width='2' marker-end='url(#arrowhead)' /></svg>"
+        }
+      ]
+    },
+    {
+      "title": "Trato Gastrointestinal",
+      "summary": "O TGI é um tubo que se estende da boca ao ânus, com órgãos anexos essenciais como glândulas salivares, fígado e pâncreas. Sua parede é formada por quatro camadas: mucosa, submucosa, muscular e serosa/adventícia. Cada segmento apresenta adaptações histológicas específicas para suas funções de digestão, absorção e eliminação, como as vilosidades do intestino delgado e a ausência delas no grosso.",
+      "keywords": ["TGI", "Mucosa/Submucosa/Muscular/Serosa", "Epitélio", "Estômago", "Intestino Delgado", "Intestino Grosso", "Vilosidades", "Células Caliciformes"],
+      "flowcharts": [
+        {
+          "title": "Fluxo Histológico do TGI",
+          "svg": "<svg width='400' height='200' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'><rect x='20' y='20' width='80' height='40' fill='#e3f2fd' stroke='#1976d2' rx='5' /><text x='60' y='45' text-anchor='middle' font-size='12'>Esôfago</text><line x1='60' y1='60' x2='60' y2='90' stroke='#1976d2' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='20' y='90' width='80' height='40' fill='#e8f5e9' stroke='#388e3c' rx='5' /><text x='60' y='115' text-anchor='middle' font-size='12'>Estômago</text><line x1='60' y1='130' x2='60' y2='160' stroke='#388e3c' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='20' y='160' width='80' height='40' fill='#fff8e1' stroke='#ffa000' rx='5' /><text x='60' y='185' text-anchor='middle' font-size='12'>I. Delgado</text><line x1='100' y1='180' x2='150' y2='180' stroke='#ffa000' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='150' y='160' width='80' height='40' fill='#e0f7fa' stroke='#0097a7' rx='5' /><text x='190' y='185' text-anchor='middle' font-size='12'>I. Grosso</text><rect x='150' y='20' width='80' height='40' fill='#fbe9e7' stroke='#e64a19' rx='5' /><text x='190' y='45' text-anchor='middle' font-size='12'>Fígado</text><line x1='190' y1='60' x2='190' y2='160' stroke='#e64a19' stroke-width='2' stroke-dasharray='5,5' marker-end='url(#arrowhead)' /><rect x='250' y='20' width='80' height='40' fill='#e1f5fe' stroke='#0288d1' rx='5' /><text x='290' y='45' text-anchor='middle' font-size='12'>Pâncreas</text><line x1='290' y1='60' x2='190' y2='160' stroke='#0288d1' stroke-width='2' stroke-dasharray='5,5' marker-end='url(#arrowhead)' /></svg>"
+        }
+      ]
+    },
+    {
+      "title": "Anexos do TGI: Pâncreas e Fígado",
+      "summary": "O pâncreas é uma glândula mista com porção exócrina (ácinos que produzem enzimas) e endócrina (ilhotas de Langerhans que produzem hormônios como insulina e glucagon). O fígado, a maior glândula do corpo, tem múltiplas funções e sua unidade funcional é o lóbulo hepático, organizado em torno da veia central e com as tríades portais na periferia. O fígado e pâncreas secretam substâncias essenciais para a digestão, como bile e enzimas, respectivamente.",
+      "keywords": ["Pâncreas", "Ilhotas de Langerhans", "Insulina", "Glucagon", "Fígado", "Tríade Portal", "Hepatócito", "Células de Kupffer"],
+      "flowcharts": [
+        {
+          "title": "Regulação da Secreção Pancreática",
+          "svg": "<svg width='400' height='200' viewBox='0 0 400 200' xmlns='http://www.w3.org/2000/svg'><rect x='20' y='20' width='120' height='40' fill='#ffe0b2' stroke='#ff5722' rx='5' /><text x='80' y='45' text-anchor='middle' font-size='12'>Quimo no Duodeno</text><line x1='80' y1='60' x2='80' y2='90' stroke='#ff5722' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='20' y='90' width='120' height='40' fill='#ffcdd2' stroke='#f44336' rx='5' /><text x='80' y='115' text-anchor='middle' font-size='12'>Secreção de CCK/Secretina</text><line x1='80' y1='130' x2='80' y2='160' stroke='#f44336' stroke-width='2' marker-end='url(#arrowhead)' /><rect x='20' y='160' width='120' height='40' fill='#e8f5e9' stroke='#4caf50' rx='5' /><text x='80' y='185' text-anchor='middle' font-size='12'>Pâncreas Estimulado</text><rect x='230' y='20' width='140' height='40' fill='#e0f7fa' stroke='#0097a7' rx='5' /><text x='300' y='45' text-anchor='middle' font-size='12'>CCK (enzimas)</text><rect x='230' y='100' width='140' height='40' fill='#e0f2f1' stroke='#004d40' rx='5' /><text x='300' y='125' text-anchor='middle' font-size='12'>Secretina (bicarbonato)</text><line x1='140' y1='100' x2='230' y2='100' stroke='#0097a7' stroke-width='2' marker-end='url(#arrowhead)' /><line x1='140' y1='100' x2='230' y2='120' stroke='#004d40' stroke-width='2' marker-end='url(#arrowhead)' /></svg>"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</div>
+
+<header>
+    <h1>SOP-III: Histologia e Embriologia</h1>
+    <p>Projeto de Estudo Autônomo para Medicina</p>
+</header>
+
+<div class="container">
+    <nav>
+        <button class="nav-btn active" onclick="showSection('home-section')">Início</button>
+        <button class="nav-btn" onclick="showSection('quiz-section')">Quiz</button>
+        <button class="nav-btn" onclick="showSection('flashcard-section')">Flashcards</button>
+        <button class="nav-btn" onclick="showSection('study-guide-section')">Guia de Estudo</button>
+    </nav>
+
+    <main>
+        <section id="home-section" class="section active">
+            <h2>Bem-vindo ao seu Guia de Estudo Interativo!</h2>
+            <p>Este material foi gerado a partir de seus arquivos de aula para a disciplina SOP-III, com foco em Histologia e Embriologia dos sistemas Endócrino e Digestório. Use o menu acima para navegar pelas ferramentas de estudo.</p>
+            <p><b>Modo de uso recomendado:</b></p>
+            <ol>
+                <li>Comece revisando os conceitos no <b>Guia de Estudo</b>.</li>
+                <li>Use os <b>Flashcards</b> para memorizar definições e relações-chave.</li>
+                <li>Teste seus conhecimentos no <b>Quiz</b>, que simula o estilo das provas do ENAMED.</li>
+                <li>Revise as justificativas das questões que errou.</li>
+            </ol>
+            <p>Este projeto é autônomo e não requer conexão com a internet. Todo o seu progresso é salvo localmente no navegador.</p>
+        </section>
+
+        <section id="quiz-section" class="section">
+            <div id="quiz-settings">
+                <h2>Configurações do Quiz</h2>
+                <p>Prepare-se para testar seus conhecimentos. As questões abordam temas de Embriologia e Histologia do Sistema Endócrino e do Trato Gastrointestinal.</p>
+                <label for="num-questions">Número de questões:</label>
+                <select id="num-questions">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30" selected>30</option>
+                    <option value="40">40</option>
+                </select>
+                <label for="timed-quiz" style="margin-left: 20px;">Com tempo:</label>
+                <input type="checkbox" id="timed-quiz">
+                <br>
+                <button class="btn" id="start-quiz-btn">Iniciar Quiz</button>
+            </div>
+            
+            <div id="quiz-area" class="hidden">
+                <div class="progress-bar"><div class="progress" id="quiz-progress"></div></div>
+                <div id="quiz-timer"></div>
+                <div id="question-container"></div>
+                <div id="quiz-navigation">
+                    <button class="nav-quiz-btn" id="prev-btn" style="display: none;">Anterior</button>
+                    <button class="nav-quiz-btn" id="next-btn">Próxima</button>
+                </div>
+                <button class="btn" id="finish-quiz-btn" style="display: none;">Finalizar Quiz</button>
+            </div>
+
+            <div id="quiz-results" class="hidden">
+                <h2>Resultados do Quiz</h2>
+                <p id="quiz-score"></p>
+                <div id="results-summary"></div>
+                <button class="btn" onclick="showSection('quiz-section'); document.getElementById('quiz-results').classList.add('hidden'); document.getElementById('quiz-settings').classList.remove('hidden');">Novo Quiz</button>
+            </div>
+        </section>
+
+        <section id="flashcard-section" class="section">
+            <h2>Flashcards de Histologia e Embriologia</h2>
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard-box">
+                    <div class="flashcard-inner" id="flashcard-inner">
+                        <div class="flashcard-front" id="flashcard-front"></div>
+                        <div class="flashcard-back" id="flashcard-back"></div>
+                    </div>
+                </div>
+                <div class="flashcard-controls">
+                    <button class="btn wrong-btn" id="flashcard-wrong">Errei</button>
+                    <button class="btn correct-btn" id="flashcard-correct">Acertei</button>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:20px;">
+                <button class="btn" onclick="printFlashcards()">Imprimir Flashcards</button>
+            </div>
+        </section>
+
+        <section id="study-guide-section" class="section">
+            <h2>Guia de Estudo Prático</h2>
+            <p>Revise os principais conceitos dos seus materiais de aula. Este guia rápido foca nas informações essenciais para a sua prova.</p>
+            <button class="btn" onclick="printStudyGuide()">Imprimir Guia Rápido</button>
+            <div id="study-guide-content"></div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const data = JSON.parse(document.getElementById('data').textContent);
+    let currentQuiz = [];
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let quizTimer;
+    let quizStartTime;
+
+    const sections = {
+        'home-section': document.getElementById('home-section'),
+        'quiz-section': document.getElementById('quiz-section'),
+        'flashcard-section': document.getElementById('flashcard-section'),
+        'study-guide-section': document.getElementById('study-guide-section')
+    };
+    const navButtons = document.querySelectorAll('.nav-btn');
+
+    function showSection(sectionId) {
+        for (let id in sections) {
+            sections[id].classList.remove('active');
+        }
+        sections[sectionId].classList.add('active');
+
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[onclick="showSection('${sectionId}')"]`).classList.add('active');
+        
+        if (sectionId === 'quiz-section' && !document.getElementById('quiz-area').classList.contains('hidden')) {
+            document.getElementById('quiz-settings').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+        }
+        if (sectionId === 'flashcard-section') {
+            initFlashcards();
+        }
+        if (sectionId === 'study-guide-section') {
+            renderStudyGuide();
+        }
+    }
+
+    // Quiz Logic
+    document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+    document.getElementById('next-btn').addEventListener('click', () => navigateQuiz(1));
+    document.getElementById('prev-btn').addEventListener('click', () => navigateQuiz(-1));
+    document.getElementById('finish-quiz-btn').addEventListener('click', showResults);
+
+    function startQuiz() {
+        const numQuestions = parseInt(document.getElementById('num-questions').value);
+        currentQuiz = shuffleArray([...data.questions]).slice(0, numQuestions).map(q => {
+            const variant = q.variants[Math.floor(Math.random() * q.variants.length)];
+            const chosenQ = variant || q;
+            return {
+                ...chosenQ,
+                options: shuffleArray(chosenQ.options)
+            };
+        });
+        currentQuestionIndex = 0;
+        userAnswers = {};
+        document.getElementById('quiz-settings').classList.add('hidden');
+        document.getElementById('quiz-area').classList.remove('hidden');
+        if (document.getElementById('timed-quiz').checked) {
+            startTimer(numQuestions * 2 * 60); // 2 minutes per question
+        }
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = currentQuiz[currentQuestionIndex];
+        const container = document.getElementById('question-container');
+        container.innerHTML = `
+            <div class="question-container">
+                <h3>Questão ${currentQuestionIndex + 1} de ${currentQuiz.length}</h3>
+                <p>${q.question}</p>
+                <ul class="options-list">
+                    ${q.options.map(option => `
+                        <li><button class="option-btn" data-answer="${option}">${option}</button></li>
+                    `).join('')}
+                </ul>
+            </div>
+        `;
+        document.getElementById('quiz-progress').style.width = `${((currentQuestionIndex + 1) / currentQuiz.length) * 100}%`;
+        
+        container.querySelectorAll('.option-btn').forEach(button => {
+            button.addEventListener('click', (e) => selectAnswer(e.target, q.answer));
+            if (userAnswers[currentQuestionIndex] === button.dataset.answer) {
+                button.classList.add('selected');
+            }
+        });
+
+        document.getElementById('prev-btn').style.display = currentQuestionIndex > 0 ? 'inline-block' : 'none';
+        document.getElementById('finish-quiz-btn').style.display = currentQuestionIndex === currentQuiz.length - 1 ? 'inline-block' : 'none';
+        document.getElementById('next-btn').style.display = currentQuestionIndex < currentQuiz.length - 1 ? 'inline-block' : 'none';
+    }
+
+    function selectAnswer(button, correctAnswer) {
+        userAnswers[currentQuestionIndex] = button.dataset.answer;
+        const options = document.getElementById('question-container').querySelectorAll('.option-btn');
+        options.forEach(btn => btn.classList.remove('selected'));
+        button.classList.add('selected');
+    }
+
+    function navigateQuiz(direction) {
+        currentQuestionIndex += direction;
+        renderQuestion();
+    }
+
+    function showResults() {
+        clearInterval(quizTimer);
+        const resultsContainer = document.getElementById('quiz-results');
+        const scoreElement = document.getElementById('quiz-score');
+        const summaryElement = document.getElementById('results-summary');
+        
+        let correctCount = 0;
+        summaryElement.innerHTML = '';
+        currentQuiz.forEach((q, index) => {
+            const userAnswer = userAnswers[index];
+            const isCorrect = userAnswer && q.options.find(opt => opt === q.answer) === userAnswer;
+            if (isCorrect) correctCount++;
+            
+            const qElement = document.createElement('div');
+            qElement.innerHTML = `
+                <h4>Questão ${index + 1}: ${q.question}</h4>
+                <p>Sua resposta: <span style="color: ${isCorrect ? 'var(--correct-color)' : 'var(--wrong-color)'};">${userAnswer || 'Não respondida'}</span></p>
+                <p>Resposta correta: <span style="color: var(--correct-color);">${q.answer}</span></p>
+                <div class="explanation">
+                    <p><strong>Explicação:</strong> ${q.explanation}</p>
+                </div>
+            `;
+            summaryElement.appendChild(qElement);
+        });
+
+        scoreElement.textContent = `Você acertou ${correctCount} de ${currentQuiz.length} questões. (${((correctCount / currentQuiz.length) * 100).toFixed(1)}%)`;
+        document.getElementById('quiz-area').classList.add('hidden');
+        resultsContainer.classList.remove('hidden');
+    }
+
+    function startTimer(duration) {
+        quizStartTime = Date.now();
+        const timerElement = document.getElementById('quiz-timer');
+        quizTimer = setInterval(() => {
+            const elapsedTime = Math.floor((Date.now() - quizStartTime) / 1000);
+            const remainingTime = duration - elapsedTime;
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            timerElement.textContent = `Tempo restante: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            if (remainingTime <= 0) {
+                showResults();
+            }
+        }, 1000);
+    }
+
+    // Flashcard Logic
+    let flashcards = shuffleArray([...data.flashcards]);
+    let currentFlashcardIndex = 0;
+
+    function initFlashcards() {
+        if (flashcards.length === 0) {
+            document.getElementById('flashcard-box').innerHTML = "<p style='text-align: center;'>Não há flashcards para revisar.</p>";
+            document.querySelector('.flashcard-controls').style.display = 'none';
+            return;
+        }
+        renderFlashcard();
+    }
+
+    document.getElementById('flashcard-box').addEventListener('click', () => {
+        document.getElementById('flashcard-box').classList.toggle('flipped');
+    });
+
+    document.getElementById('flashcard-correct').addEventListener('click', () => {
+        updateFlashcardProgress(true);
+        nextFlashcard();
+    });
+
+    document.getElementById('flashcard-wrong').addEventListener('click', () => {
+        updateFlashcardProgress(false);
+        nextFlashcard();
+    });
+
+    function renderFlashcard() {
+        if (flashcards.length === 0) {
+            document.getElementById('flashcard-box').innerHTML = "<p style='text-align: center;'>Fim dos flashcards. Parabéns!</p>";
+            document.querySelector('.flashcard-controls').style.display = 'none';
+            return;
+        }
+        const card = flashcards[currentFlashcardIndex];
+        document.getElementById('flashcard-front').textContent = card.front;
+        document.getElementById('flashcard-back').innerHTML = `
+            <h4>Resposta:</h4>
+            <p>${card.back}</p>
+            ${card.mnemonic ? `<p><strong>Dica Mnemônica:</strong> ${card.mnemonic}</p>` : ''}
+        `;
+        document.getElementById('flashcard-box').classList.remove('flipped');
+    }
+    
+    function nextFlashcard() {
+        currentFlashcardIndex = (currentFlashcardIndex + 1) % flashcards.length;
+        renderFlashcard();
+    }
+    
+    function updateFlashcardProgress(isCorrect) {
+        // Simple spaced repetition logic (for demonstration)
+        const card = flashcards[currentFlashcardIndex];
+        const nextTime = new Date();
+        if (isCorrect) {
+            nextTime.setDate(nextTime.getDate() + 1);
+        } else {
+            nextTime.setHours(nextTime.getHours() + 1);
+        }
+        card.nextReview = nextTime.getTime();
+        localStorage.setItem('flashcard_progress', JSON.stringify(data.flashcards));
+    }
+
+    // Study Guide Logic
+    function renderStudyGuide() {
+        const container = document.getElementById('study-guide-content');
+        container.innerHTML = data.study_guides.map(guide => `
+            <div class="guide-section">
+                <h2>${guide.title}</h2>
+                <p>${guide.summary}</p>
+                <h4>O que você precisa saber:</h4>
+                <ul class="keywords-list">
+                    ${guide.keywords.map(kw => `<li class="keyword-tag">${kw}</li>`).join('')}
+                </ul>
+                ${guide.flowcharts.map(fc => `
+                    <h4>${fc.title}</h4>
+                    <div class="flowchart-container">${fc.svg}</div>
+                `).join('')}
+            </div>
+        `).join('');
+    }
+
+    // General Utilities
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function printFlashcards() {
+        window.print();
+    }
+
+    function printStudyGuide() {
+        window.print();
+    }
+
+    // Initial load
+    window.onload = () => {
+        showSection('home-section');
+    };
+</script>
+
+</body>
+</html>
